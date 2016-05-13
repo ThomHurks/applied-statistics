@@ -1,0 +1,58 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{placeins}
+
+<<echo=FALSE>>=
+library(sas7bdat)
+dataset = read.sas7bdat("assignment1.sas7bdat")
+@
+
+\title{Applied Statistics}
+
+\author{
+\begin{minipage}{0.6\textwidth}
+\centering
+\begin{tabular}{l r}
+Thom Hurks & \textit{0828691}\\
+Puck Mulders & \textit{0737709}\\
+Marijn van Knippenberg  & \textit{0676548}\\
+Rik Coenders & \textit{0777004}
+\end{tabular}
+\end{minipage}
+}
+
+\date{May 25, 2016}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+Todo
+
+\newpage
+\section{Exploratory Data Analysis}
+\subsection{Normality}
+First, let us determine if the outcomes in the dataset are normally distributed.
+The first step is to generate a normal QQ plot as an easy visual confirmation.
+<<figure1, fig.cap="QQ Plot", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
+qqnorm(dataset$OUTCOME)
+qqline(dataset$OUTCOME)
+swtest = shapiro.test(dataset$OUTCOME)
+@
+\FloatBarrier
+The normal QQ plot already seems to suggest that the data is not normally distributed. When we also perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtest$p.value} < 0.05$ so we can reject the null-hypothesis that the outcome is normally distributed.\\
+<<echo=FALSE, message=FALSE, warning=FALSE, results="hide">>=
+library(adehabitatLT)
+wawo <- wawotest(dataset$OUTCOME)
+@
+Next we perform the Wald-Wolfowitz runs test to test the null hypothesis that each element in the sequence is independently drawn from the same distribution. We see that the p-value $=\Sexpr{wawo["p"]} < 0.05$ so we can reject that null hypothesis. This is an interesting result, because we know the data is obtained from the same source, but part of the samples may or may not be tainted, and this result may point to that being true.
+
+\section{Appendix}
+The dataset used for assignment 1:
+<<echo=FALSE>>=
+dataset
+@
+
+\end{document}

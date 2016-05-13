@@ -1,0 +1,15 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.log
+
+*.aux
+
+*.log
+
+assignment1/.texpadtmp/Assignment1_report.synctex.gz
+
+*.toc
+
+*.tex
