@@ -47,7 +47,45 @@ The normal QQ plot already seems to suggest that the data is not normally distri
 library(adehabitatLT)
 wawo <- wawotest(dataset$OUTCOME)
 @
-Next we perform the Wald-Wolfowitz runs test to test the null hypothesis that each element in the sequence is independently drawn from the same distribution. We see that the p-value $=\Sexpr{wawo["p"]} < 0.05$ so we can reject that null hypothesis. This is an interesting result, because we know the data is obtained from the same source, but part of the samples may or may not be tainted, and this result may point to that being true.
+Next we perform the Wald-Wolfowitz runs test to test the null hypothesis that each element in the sequence is independently drawn from the same distribution. We see that the p-value $=\Sexpr{wawo["p"]} < 0.05$ so we can reject that null hypothesis. This is an interesting result, because we know the data is obtained from the same source, but part of the samples may or may not be tainted, and this result may point to that being true.\\
+
+The sample auto-correlation graph with 0 to 20 lags:\\
+<<echo=FALSE, warning=FALSE>>=
+ACF_Custom <- function(sdata, lags)
+{
+  original_length = length(sdata)
+  sdata <- sdata[!is.nan(sdata)]
+  new_length = length(sdata)
+  if (new_length != original_length)
+  {
+    warning(paste("Removed", original_length - new_length, "NAs.", sep=" "))
+  }
+  n <- new_length
+  r <- mean(sdata)
+  s2 <- var(sdata)
+  
+  acf_out <- array(NA, dim=lags+1)
+  for(k in 0:lags)
+  {
+    n_min_k <- (n-k)
+    ratio1 <- 1/((n - k)*s2)
+    sum1 <- 0
+  
+    for(t in 1:n_min_k)
+    {
+      sum1 <- (sum1 + (sdata[t] - r)*(sdata[t+k] - r))
+    }
+    acf_out[k+1] <- round((ratio1*sum1), 3)
+  }
+  plot.new()
+  plot(0:lags, acf_out, type="h", ylim=c(min(acf_out), max(acf_out)), xlim=c(0, lags),
+       main = "Sample auto-correlation", 
+       xlab = "Lags",
+       ylab = "ACF")
+  abline(h=0)
+}
+ACF_Custom(dataset$OUTCOME, 20)
+@
 
 \section{Appendix}
 The dataset used for assignment 1:
