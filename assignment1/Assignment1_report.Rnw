@@ -1,10 +1,19 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage{placeins}
+\usepackage{longtable}
 
 <<echo=FALSE>>=
 library(sas7bdat)
 dataset = read.sas7bdat("assignment1.sas7bdat")
+batchB0 = dataset[dataset$BATCH == "B0",]
+batchB1 = dataset[dataset$BATCH == "B1",]
+batchB2 = dataset[dataset$BATCH == "B2",]
+batchB3 = dataset[dataset$BATCH == "B3",]
+batchB4 = dataset[dataset$BATCH == "B4",]
+batchB5 = dataset[dataset$BATCH == "B5",]
+batchB6 = dataset[dataset$BATCH == "B6",]
+batchB7 = dataset[dataset$BATCH == "B7",]
 @
 
 \title{Applied Statistics}
@@ -34,6 +43,7 @@ Todo
 \newpage
 \section{Exploratory Data Analysis}
 \subsection{Normality}
+\subsubsection{QQ Plot and Shapiro-Wilk}
 First, let us determine if the outcomes in the dataset are normally distributed.
 The first step is to generate a normal QQ plot as an easy visual confirmation.
 <<figure1, fig.cap="QQ Plot", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
@@ -42,55 +52,47 @@ qqline(dataset$OUTCOME)
 swtest = shapiro.test(dataset$OUTCOME)
 @
 \FloatBarrier
-The normal QQ plot already seems to suggest that the data is not normally distributed. When we also perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtest$p.value} < 0.05$ so we can reject the null-hypothesis that the outcome is normally distributed.\\
+The normal QQ plot already seems to suggest that the data is not normally distributed. When we also perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtest$p.value} < 0.05$ so we can reject the null-hypothesis that the outcome is normally distributed.
+\subsubsection{Wald-Wolfowitz Runs Test}
 <<echo=FALSE, message=FALSE, warning=FALSE, results="hide">>=
 library(adehabitatLT)
 wawo <- wawotest(dataset$OUTCOME)
 @
 Next we perform the Wald-Wolfowitz runs test to test the null hypothesis that each element in the sequence is independently drawn from the same distribution. We see that the p-value $=\Sexpr{wawo["p"]} < 0.05$ so we can reject that null hypothesis. This is an interesting result, because we know the data is obtained from the same source, but part of the samples may or may not be tainted, and this result may point to that being true.\\
-
-The sample auto-correlation graph with 0 to 20 lags:\\
-<<echo=FALSE, warning=FALSE>>=
-ACF_Custom <- function(sdata, lags)
-{
-  original_length = length(sdata)
-  sdata <- sdata[!is.nan(sdata)]
-  new_length = length(sdata)
-  if (new_length != original_length)
-  {
-    warning(paste("Removed", original_length - new_length, "NAs.", sep=" "))
-  }
-  n <- new_length
-  r <- mean(sdata)
-  s2 <- var(sdata)
-  
-  acf_out <- array(NA, dim=lags+1)
-  for(k in 0:lags)
-  {
-    n_min_k <- (n-k)
-    ratio1 <- 1/((n - k)*s2)
-    sum1 <- 0
-  
-    for(t in 1:n_min_k)
-    {
-      sum1 <- (sum1 + (sdata[t] - r)*(sdata[t+k] - r))
-    }
-    acf_out[k+1] <- round((ratio1*sum1), 3)
-  }
-  plot.new()
-  plot(0:lags, acf_out, type="h", ylim=c(min(acf_out), max(acf_out)), xlim=c(0, lags),
-       main = "Sample auto-correlation", 
-       xlab = "Lags",
-       ylab = "ACF")
-  abline(h=0)
-}
-ACF_Custom(dataset$OUTCOME, 20)
+\subsubsection{Rank Serial Correlation Test}
+Here we perform the rank serial autocorrelation test at lag 1 using the rank von Neumann ratio. This tests the null hypothesis that the lag-$k$ autocorrelation is $0$ for all values of $k$ greater than $0$ (i.e., the time series is purely random). The procedure that we use emits some warnings because the dataset contains ties, and with this specific test that can make the p-value less accurate. With that warning in mind, we present the table containing the rank serial autocorrelation test p-values of each batch:\\
+<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
+library(EnvStats)
+serialCorB0 = unlist(serialCorrelationTest(batchB0$OUTCOME[!is.nan(batchB0$OUTCOME)], test = "rank.von.Neumann")["p.value"])
+serialCorB1 = unlist(serialCorrelationTest(batchB1$OUTCOME[!is.nan(batchB1$OUTCOME)], test = "rank.von.Neumann")["p.value"])
+serialCorB2 = unlist(serialCorrelationTest(batchB2$OUTCOME[!is.nan(batchB2$OUTCOME)], test = "rank.von.Neumann")["p.value"])
+serialCorB3 = unlist(serialCorrelationTest(batchB3$OUTCOME[!is.nan(batchB3$OUTCOME)], test = "rank.von.Neumann")["p.value"])
+serialCorB4 = unlist(serialCorrelationTest(batchB4$OUTCOME[!is.nan(batchB4$OUTCOME)], test = "rank.von.Neumann")["p.value"])
+serialCorB5 = unlist(serialCorrelationTest(batchB5$OUTCOME[!is.nan(batchB5$OUTCOME)], test = "rank.von.Neumann")["p.value"])
+serialCorB6 = unlist(serialCorrelationTest(batchB6$OUTCOME[!is.nan(batchB6$OUTCOME)], test = "rank.von.Neumann")["p.value"])
+serialCorB7 = unlist(serialCorrelationTest(batchB7$OUTCOME[!is.nan(batchB7$OUTCOME)], test = "rank.von.Neumann")["p.value"])
+serial_cor_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"), 
+                              "p-value"=c(serialCorB0, serialCorB1, serialCorB2, serialCorB3,
+                                            serialCorB4, serialCorB5, serialCorB6, serialCorB7))
+library(xtable)
+xtable(serial_cor_frame)
 @
-
+As one can observe, the p-values are all large, which means that we cannot reject the null hypothesis that the batches are random using this test.
 \section{Appendix}
-The dataset used for assignment 1:
-<<echo=FALSE>>=
-dataset
+The dataset used for assignment 1:\\
+<<echo=FALSE, results="asis", warning=FALSE>>=
+library(xtable)
+long_table = xtable(dataset)
+add.to.row <- list(pos = list(0), command = NULL)
+command <- paste0(
+  "\\hline\n\\endhead\n",
+  "\\hline\n",
+  "\\multicolumn{", dim(dataset)[2] + 1, "}{l}",
+  "{\\footnotesize Continued on next page}\n", "\\endfoot\n",
+  "\\endlastfoot\n")
+add.to.row$command <- command
+align(long_table) <- "|l|l|l|l|l|l|"
+print(long_table, hline.after=c(-1), add.to.row = add.to.row, tabular.environment = "longtable")
 @
 
 \end{document}
