@@ -11,6 +11,5 @@ B0 = dataset[dataset$BATCH == "B0",]$OUTCOME;
 varianceEqualityPValues = list();
 for (batch in batches) {
   Bi = dataset[dataset$BATCH == batch,]$OUTCOME;
-  varianceEqualityPValues[batch] <- var.test(B0, Bi)$p.value
+  varianceEqualityPValues[batch] <- var.test(B0, Bi)$p.value;
 }
-
