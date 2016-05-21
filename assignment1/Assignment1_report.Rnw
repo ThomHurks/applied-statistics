@@ -1,11 +1,11 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
 \usepackage{placeins}
-\usepackage{longtable}
+\usepackage{longtable,framed}
 
 <<echo=FALSE>>=
 library(sas7bdat)
-#dataset = read.sas7bdat("assignment1.sas7bdat")
+dataset = read.sas7bdat("assignment1.sas7bdat")
 batchB0 = dataset[dataset$BATCH == "B0",]
 batchB1 = dataset[dataset$BATCH == "B1",]
 batchB2 = dataset[dataset$BATCH == "B2",]
@@ -36,7 +36,7 @@ Rik Coenders & \textit{0777004}
 \end{minipage}
 }
 
-\date{May 25, 2016}
+\date{\today}
 
 \begin{document}
 
@@ -48,15 +48,20 @@ Todo
 
 \newpage
 \section{Methods}
-To check whether the batches are 
+To decide which of the batches is infected, we are performing both non-parametric tests and parametric tests which assume that the data is normally distributed. Non-parametric tests are generally less powerful than parametric tests, while the parametric tests are not always as reliable if the data is not perfectly normally distributed. As a start, we will plot the data and perform a Shapiro-Wilk test to see whether the non-transformed data is normal. After that, we will perform a Wald-Wolfowitz Runs Test which has as a null hypothesis that each element in the sequence in drawn from the same distribution. If this is not the case, it could be an indicator that some of the batches are affected by silicones. We reject the null hypothesis if $p < 0.05$. 
 \subsection{Normal distribution}
-To check whether the batches are normally distributed, we will first perform a log normal transformation on the data set. 
+To decide whether the data is normally distributed, we first perform a log normal transformation on the data. After the transformation, we will plot the data to get an insight how the data is distributed. We will then perform the Shapiro-Wilk tests on each of the batches to see whether we can reject that the data is from a normal distribution. $\alpha=0,05$ is chosen as the critical value. If we can indeed conclude that the batches are normally distributed, we can compare each batch with batch 0. Because batch 0 is produced before the leakage was discovered, we know that the mean of the amount of silicones found in the batch should be similar to the amount of silicone in batch 0. Therefore our hypothesis is the following:
+\begin{align}
+H_0: \mu_0 = \mu_i \text{for} 1 \leq i \leq 7
+H_1 \mu_0 \neq \mu_i \text{for} 1 \leq i \leq 7
+\end{align}
+If the result of the t-test is below 0,05, we will reject the null hypothesis. \\\\
+Besides a t-test, we will also perform some homogeneity tests, to see whether the data also share the same characteristics. To check if this is the case, we will perform both a Barlett's test, which checks whether all the variances of the batches are equal to each other. The null hypothesis is that all variances are equal (and thus that the sets are homogeneous).  We will also perform a F-test to see which batches have similar properties with batch 0.
 \subsection{Non-parametric tests}
+Kormogov
 \section{Results}
-\section{Exploratory Data Analysis}
-\subsection{Normality}
-\subsubsection{QQ Plot and Shapiro-Wilk}
-First, let us determine if the outcomes in the dataset are normally distributed.
+\subsection{QQ Plot and Shapiro-Wilk}
+First, the data has been transformed to 
 The first step is to generate a normal QQ plot as an easy visual confirmation.
 <<figure1, fig.cap="QQ Plot", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
 qqnorm(dataset$OUTCOME)
@@ -65,12 +70,81 @@ swtest = shapiro.test(dataset$OUTCOME)
 @
 \FloatBarrier
 The normal QQ plot already seems to suggest that the data is not normally distributed. When we also perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtest$p.value} < 0.05$ so we can reject the null-hypothesis that the outcome is normally distributed.
+\subsection{Normal distribution}
+\subsubsection{Shapiro-Wilk}
+After performing a log normal transformation, the results of the Shapiro-Wilk test can be found in the table below.
+\begin{center}
+\begin{tabular}{| l | l |}
+\hline
+Batch & P-value \\ \hline 
+B0 & 0.03876912  \\ \hline 
+B1 & 0.1414101  \\ \hline 
+B2 & 0.6190074  \\ \hline 
+B3 & 0.6635468  \\ \hline 
+B4 & 0.8978743  \\ \hline 
+B5 & 0.06197854  \\ \hline 
+B6 & 0.2063684  \\ \hline 
+B7 & 0.9643288 \\ 
+\hline 
+\end{tabular}
+\end{center}
+Only the p-value of batch 0 is lower than 0,05, which means that only in that batch normality is rejected according to the Shapiro-Wilk test, but normality is not rejected with a very low p-value. All the other batches cannot reject a normal distribution and because the batches should all have a similar distribution, we will assume that batch 0 is normally distributed. 
+\subsubsection{T-Test}
+To see which t-test we have to perform, we have analysed the variance of all the batches. The variance differs from each batch, as can be see in the table below. Because of that, we will perform a t-test that assumes unequal variances. 
+\begin{center}
+\begin{tabular}{| l | l |}
+\hline
+ Batch & P-value \\ \hline 
+B0 & 0.9399675  \\ \hline 
+B1 & 0.3146983  \\ \hline 
+B2 & 1.446813  \\ \hline 
+B3 & 0.6830243  \\ \hline 
+B4 & 0.1557867  \\ \hline 
+B5 & 0.2116048  \\ \hline 
+B6 & 0.3831803  \\ \hline 
+B7 & 0.4372429 \\ 
+\hline 
+\end{tabular}
+\end{center}
+The results of the t-test can be found in the following table:
+\begin{center}
+\begin{tabular}{| l | l |}
+\hline
+Batch & P-value \\ \hline 
+B1 & 0.3972427 \\ \hline 
+B2 &  0.03181353 \\ \hline 
+B3 &  0.004011126 \\ \hline 
+B4 & 0.1210506  \\ \hline 
+B5 & 0.1191315  \\ \hline 
+B6 & 0.4672437  \\ \hline 
+B7 & 0.02896952 \\ 
+\hline 
+\end{tabular}
+\end{center}
+The results indicate that batches 2, 3 and 7 have a mean that is different from the mean of the unaffected batch. This could indicate that these batches are affected.
+\subsubsection{Homogeneity tests}
+Performing the Barlett's tests gives us a p-value of $4,523*10^{-15}$. This rejects the null hypothesis that all the batches have the same variance. After performing an F-test that compares all the batches with batch 0, we have found the following results:
+\begin{center}
+\begin{tabular}{| l | l |}
+\hline
+Batch & P-value \\ \hline 
+B1 & 0.04429337 \\ \hline 
+B2 &  0.003227914 \\ \hline 
+B3 & 0.06260923\\ \hline 
+B4 & $4.570405*10^{-7}$  \\ \hline 
+B5 & 0.08812147  \\ \hline 
+B6 & 0.266533  \\ \hline 
+B7 & 0.9583088 \\ 
+\hline 
+\end{tabular}
+\end{center}
+These results indicate that batch 1, 2, and 4 have different properties than batch 0. 
 \subsubsection{Wald-Wolfowitz Runs Test}
 <<echo=FALSE, message=FALSE, warning=FALSE, results="hide">>=
 library(adehabitatLT)
 wawo <- wawotest(dataset$OUTCOME)
 @
-Next we perform the Wald-Wolfowitz runs test to test the null hypothesis that each element in the sequence is independently drawn from the same distribution. We see that the p-value $=\Sexpr{wawo["p"]} < 0.05$ so we can reject that null hypothesis. This is an interesting result, because we know the data is obtained from the same source, but part of the samples may or may not be tainted, and this result may point to that being true.\\
+We have performed a Wald-Wolfowitz Runs test. We see that the p-value $=\Sexpr{wawo["p"]} < 0.05$ so we can reject that null hypothesis. This is an interesting result, because we know the data is obtained from the same source, but part of the samples may or may not be tainted, and this result may point to that being true.\\
 \subsubsection{Rank Serial Correlation Test}
 Here we perform the rank serial autocorrelation test at lag 1 using the rank von Neumann ratio. This tests the null hypothesis that the lag-$k$ autocorrelation is $0$ for all values of $k$ greater than $0$ (i.e., the time series is purely random). The procedure that we use emits some warnings because the dataset contains ties, and with this specific test that can make the p-value less accurate. With that warning in mind, we present the table containing the rank serial autocorrelation test p-values of each batch:\\
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
@@ -90,21 +164,5 @@ library(xtable)
 xtable(serial_cor_frame)
 @
 As one can observe, the p-values are all large, which means that we cannot reject the null hypothesis that the batches are random using this test.
-\section{Appendix}
-The dataset used for assignment 1:\\
-<<echo=FALSE, results="asis", warning=FALSE>>=
-library(xtable)
-long_table = xtable(dataset)
-add.to.row <- list(pos = list(0), command = NULL)
-command <- paste0(
-  "\\hline\n\\endhead\n",
-  "\\hline\n",
-  "\\multicolumn{", dim(dataset)[2] + 1, "}{l}",
-  "{\\footnotesize Continued on next page}\n", "\\endfoot\n",
-  "\\endlastfoot\n")
-add.to.row$command <- command
-align(long_table) <- "|l|l|l|l|l|l|"
-print(long_table, hline.after=c(-1), add.to.row = add.to.row, tabular.environment = "longtable")
-@
 
 \end{document}
