@@ -5,7 +5,7 @@
 
 <<echo=FALSE>>=
 library(sas7bdat)
-dataset = read.sas7bdat("assignment1.sas7bdat")
+#dataset = read.sas7bdat("assignment1.sas7bdat")
 batchB0 = dataset[dataset$BATCH == "B0",]
 batchB1 = dataset[dataset$BATCH == "B1",]
 batchB2 = dataset[dataset$BATCH == "B2",]
@@ -15,8 +15,14 @@ batchB5 = dataset[dataset$BATCH == "B5",]
 batchB6 = dataset[dataset$BATCH == "B6",]
 batchB7 = dataset[dataset$BATCH == "B7",]
 @
+<<>>=
+<<>>=
 
-\title{Applied Statistics}
+@
+
+@
+
+\title{Analysis of silicone contamination of batches}
 
 \author{
 \begin{minipage}{0.6\textwidth}
@@ -41,6 +47,12 @@ Rik Coenders & \textit{0777004}
 Todo
 
 \newpage
+\section{Methods}
+To check whether the batches are 
+\subsection{Normal distribution}
+To check whether the batches are normally distributed, we will first perform a log normal transformation on the data set. 
+\subsection{Non-parametric tests}
+\section{Results}
 \section{Exploratory Data Analysis}
 \subsection{Normality}
 \subsubsection{QQ Plot and Shapiro-Wilk}
