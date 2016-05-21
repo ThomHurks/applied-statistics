@@ -50,7 +50,7 @@ Todo
 \section{Methods}
 To decide which of the batches is infected, we are performing both non-parametric tests and parametric tests which assume that the data is normally distributed. Non-parametric tests are generally less powerful than parametric tests, while the parametric tests are not always as reliable if the data is not perfectly normally distributed. As a start, we will plot the data and perform a Shapiro-Wilk test to see whether the non-transformed data is normal. After that, we will perform a Wald-Wolfowitz Runs Test which has as a null hypothesis that each element in the sequence in drawn from the same distribution. If this is not the case, it could be an indicator that some of the batches are affected by silicones. We reject the null hypothesis if $p < 0.05$. 
 \subsection{Normal distribution}
-To decide whether the data is normally distributed, we first perform a log normal transformation on the data. After the transformation, we will plot the data to get an insight how the data is distributed. We will then perform the Shapiro-Wilk tests on each of the batches to see whether we can reject that the data is from a normal distribution. $\alpha=0,05$ is chosen as the critical value. If we can indeed conclude that the batches are normally distributed, we can compare each batch with batch 0. Because batch 0 is produced before the leakage was discovered, we know that the mean of the amount of silicones found in the batch should be similar to the amount of silicone in batch 0. Therefore our hypothesis is the following:
+To decide whether the data is normally distributed, we first perform a log normal transformation on the data. After the transformation, we will plot the data to get an insight how the data is distributed. We will then perform the Shapiro-Wilk tests on each of the batches to see whether we can reject that the data is from a normal distribution. We will perform a skewness and kurtosis test to see whether batch 0 is in the appropriate range of skewness (between -0,3 and 0,3) and in the appropriate range of kurtosis (between -0,5 and 1,5). $\alpha=0,05$ is chosen as the critical value. If we can indeed conclude that the batches are normally distributed, we can compare each batch with batch 0. Because batch 0 is produced before the leakage was discovered, we know that the mean of the amount of silicones found in the batch should be similar to the amount of silicone in batch 0. Therefore our hypothesis is the following:
 \begin{align}
 H_0: \mu_0 = \mu_i \text{for} 1 \leq i \leq 7
 H_1 \mu_0 \neq \mu_i \text{for} 1 \leq i \leq 7
@@ -71,7 +71,7 @@ swtest = shapiro.test(dataset$OUTCOME)
 \FloatBarrier
 The normal QQ plot already seems to suggest that the data is not normally distributed. When we also perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtest$p.value} < 0.05$ so we can reject the null-hypothesis that the outcome is normally distributed.
 \subsection{Normal distribution}
-\subsubsection{Shapiro-Wilk}
+\subsubsection{Shapiro-Wilk, skewness and kurtosis}
 After performing a log normal transformation, the results of the Shapiro-Wilk test can be found in the table below.
 \begin{center}
 \begin{tabular}{| l | l |}
@@ -88,7 +88,7 @@ B7 & 0.9643288 \\
 \hline 
 \end{tabular}
 \end{center}
-Only the p-value of batch 0 is lower than 0,05, which means that only in that batch normality is rejected according to the Shapiro-Wilk test, but normality is not rejected with a very low p-value. All the other batches cannot reject a normal distribution and because the batches should all have a similar distribution, we will assume that batch 0 is normally distributed. 
+Only the p-value of batch 0 is lower than 0,05, which means that only in that batch normality is rejected according to the Shapiro-Wilk test, but normality is not rejected with a very low p-value. When we perform the skewness and kurtosis test, we get values of 1,36 and 0,51 respectively. This means that although the kurtosis is in the appropriate range to be normally distributed, the skewness of the data is a bit too high. The data is skewed right, which probably is the reason that the Shapiro-Wilk test rejects a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the results of the skewness and kurtosis tests are not very extreme, in combination with the fact that all the other batches are normally distributed, we will assume a normal distribution for the following tests.
 \subsubsection{T-Test}
 To see which t-test we have to perform, we have analysed the variance of all the batches. The variance differs from each batch, as can be see in the table below. Because of that, we will perform a t-test that assumes unequal variances. 
 \begin{center}
