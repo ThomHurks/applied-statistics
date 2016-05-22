@@ -26,5 +26,5 @@ for (batch in batches) {
 }
 
 means <- as.numeric(means)
-
+plot(means)
 serialCorrelationTest(means)
