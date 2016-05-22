@@ -44,7 +44,9 @@ Rik Coenders & \textit{0777004}
 \tableofcontents
 
 \section{Introduction}
-Todo
+The health inspection has found a leakage of silicones at the place where batches are created. It is unknown when the silicones began leaking and therefore it is unknown which of the batches are affected with the silicones. Because the silicones are needed to produce the batches, silicones are to some amount always present in the batches. In some of the batches the amount of silicones will be too high, which is dangerous. The goal of this report is to find the batches that are affected with the silicones. 
+\\\\ 
+In the first section we describe which methods we use to find the affected batches. In the next section we will describe what the results of these methods are. Than, last, we will conclude which of the batches are affected. In this section we will also describe what the downfalls are of the investigation we did. 
 
 \newpage
 \section{Methods}
@@ -59,6 +61,7 @@ If the result of the t-test is below 0,05, we will reject the null hypothesis. \
 Besides a t-test, we will also perform some homogeneity tests, to see whether the data also share the same characteristics. To check if this is the case, we will perform both a Barlett's test, which checks whether all the variances of the batches are equal to each other. The null hypothesis is that all variances are equal (and thus that the sets are homogeneous).  We will also perform a F-test to see which batches have similar properties with batch 0.
 \subsection{Non-parametric tests}
 Kormogov
+We will perform a serial correlation test on the means of each batches. The serial correlation test is Von Neumann with Lag-1 Autocorrelation. As a null hypothesis we will assume that the means are random. If they are random, than there will be no clear pattern. This is expected if no of the batches will be affected. We will reject the null hypothesis is $p<0.05$.
 \section{Results}
 \subsection{QQ Plot and Shapiro-Wilk}
 First, the data has been transformed to 
@@ -139,6 +142,9 @@ B7 & 0.9583088 \\
 \end{tabular}
 \end{center}
 These results indicate that batch 1, 2, and 4 have different properties than batch 0. 
+\subsection{Non-parametric tests}
+\subsubsection{Serial correlation tests with means}
+We have performed a Rank von Neumann Test for lag-1. The p-value is $0.4895337 < 0.05$ and we therefore have to reject the null hypothesis. This means that the serial correlation test detects some pattern in the means of the batches. 
 \subsubsection{Wald-Wolfowitz Runs Test}
 <<echo=FALSE, message=FALSE, warning=FALSE, results="hide">>=
 library(adehabitatLT)
@@ -164,5 +170,6 @@ library(xtable)
 xtable(serial_cor_frame)
 @
 As one can observe, the p-values are all large, which means that we cannot reject the null hypothesis that the batches are random using this test.
+\section{Results}
 
 \end{document}
