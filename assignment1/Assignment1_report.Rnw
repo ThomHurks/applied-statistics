@@ -74,7 +74,7 @@ swtestB0toB7 = shapiro.test(batchB1toB7$OUTCOME)
 \FloatBarrier
 The normal QQ plot here too seems to suggest that the data is not normally distributed. When we again perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtestB0toB7$p.value} < 0.05$ so we can reject the null-hypothesis that the outcome of batches 1 to 7 is normally distributed.\\\\
 \subsection{Normal distribution}
-\subsubsection{Shapiro-Wilk, skewness and kurtosis}
+\subsubsection{Shapiro-Wilk on log-transformed data}
 In the previous section we observed that the data does not seem to follow a normal distribution. In order to perform parametric tests that assume normality, we must then transform the data. We will transform the data using the well-known log transformation and then check for each batch what the p-value of the Shapiro-Wilk test is in order to confirm that the transformation had the desired effect.
 <<echo=FALSE, results="asis">>=
 library(xtable)
@@ -86,7 +86,15 @@ sw_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"
                                       shapiro.test(log(batchB6$OUTCOME))$p.value, shapiro.test(log(batchB7$OUTCOME))$p.value))
 xtable(sw_log_frame)
 @
-Only the p-value of batch B0 $= \Sexpr{sw_log_batchB0} < 0.05$, which means that only in that batch normality is rejected according to the Shapiro-Wilk test, but it must be noted that the p-value is not very small so this test may not be conclusive. When we perform the skewness and kurtosis tests, we obtain values of 1.36 and 0.51 respectively. This means that although the kurtosis is in the appropriate range to be normally distributed, the skewness of the data is a bit too high. The data is skewed right, which probably is the reason that the Shapiro-Wilk test rejects a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the results of the skewness and kurtosis tests are not very extreme, in combination with the fact that all the other batches are normally distributed, we will assume a normal distribution for the following tests.
+Only the p-value of batch B0 $= \Sexpr{sw_log_batchB0} < 0.05$, which means that only in that batch normality is rejected according to the Shapiro-Wilk test, but it must be noted that the p-value is not very small so this test may not be conclusive.
+\subsubsection{Skewness and Kurtosis}
+<<echo=FALSE>>=
+library(moments)
+kurtosis_log_B0 = moments::kurtosis(log(batchB0$OUTCOME))
+skewness_log_B0 = moments::skewness(log(batchB0$OUTCOME))
+jb_log_B0 = as.numeric(unlist(jarque.test(log(batchB0$OUTCOME)))["p.value"])
+@
+In order to determine if the normality assumption for batch 0 is reasonable, we can perform other tests. We can compute the skewness and kurtosis metrics and observe that for batch 0 they are $\Sexpr{skewness_log_B0}$ and $\Sexpr{kurtosis_log_B0}$ respectively. This means that although the kurtosis is in the appropriate range to be normally distributed, the skewness of the data is a bit too high. This kind of test is also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is $\Sexpr{jb_log_B0} > 0.05$. The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the skewness, kurtosis and Jarque-Bera tests seem to suggest a close-to-normal shape. In combination with the fact that for all the other batches we cannot reject the normality null hypothesis, we will assume that batch 0 is normally distributed for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
 \subsubsection{T-Test}
 To see which t-test we have to perform, we have analysed the variance of all the batches. The variance differs from each batch, as can be see in the table below. Because of that, we will perform a t-test that assumes unequal variances. 
 \begin{center}
