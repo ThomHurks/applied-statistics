@@ -64,34 +64,29 @@ qqline(batchB0$OUTCOME)
 swtestB0 = shapiro.test(batchB0$OUTCOME)
 @
 \FloatBarrier
-The normal QQ plot already seems to suggest that the data is not normally distributed. When we also perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtestB0$p.value} < 0.05$ so we can reject the null-hypothesis that the outcome is normally distributed.\\\\
-Next we can generate a normal QQ plot for the other, possible affected, batches B1 to B7.
+The normal QQ plot already seems to suggest that batch 0 is not normally distributed. When we also perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtestB0$p.value} < 0.05$ so we can reject the null-hypothesis that the outcome is normally distributed.\\\\
+Next we can generate a normal QQ plot for the other, possible affected, batches 1 to 7. Of course generating this plot for multiple batches at once assumes that the units are somewhat consistent across different batches.
 <<figure2, fig.cap="QQ Plot", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
 qqnorm(batchB1toB7$OUTCOME)
 qqline(batchB1toB7$OUTCOME)
 swtestB0toB7 = shapiro.test(batchB1toB7$OUTCOME)
 @
 \FloatBarrier
-The normal QQ plot here too seems to suggest that the data is not normally distributed. When we again perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtestB0toB7$p.value} < 0.05$ so we can reject the null-hypothesis that the outcome is normally distributed.\\\\
+The normal QQ plot here too seems to suggest that the data is not normally distributed. When we again perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtestB0toB7$p.value} < 0.05$ so we can reject the null-hypothesis that the outcome of batches 1 to 7 is normally distributed.\\\\
 \subsection{Normal distribution}
 \subsubsection{Shapiro-Wilk, skewness and kurtosis}
-After performing a log normal transformation, the results of the Shapiro-Wilk test can be found in the table below.
-\begin{center}
-\begin{tabular}{| l | l |}
-\hline
-Batch & P-value \\ \hline 
-B0 & 0.03876912  \\ \hline 
-B1 & 0.1414101  \\ \hline 
-B2 & 0.6190074  \\ \hline 
-B3 & 0.6635468  \\ \hline 
-B4 & 0.8978743  \\ \hline 
-B5 & 0.06197854  \\ \hline 
-B6 & 0.2063684  \\ \hline 
-B7 & 0.9643288 \\ 
-\hline 
-\end{tabular}
-\end{center}
-Only the p-value of batch 0 is lower than $0.05$, which means that only in that batch normality is rejected according to the Shapiro-Wilk test, but normality is not rejected with a very low p-value. When we perform the skewness and kurtosis test, we get values of 1.36 and 0.51 respectively. This means that although the kurtosis is in the appropriate range to be normally distributed, the skewness of the data is a bit too high. The data is skewed right, which probably is the reason that the Shapiro-Wilk test rejects a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the results of the skewness and kurtosis tests are not very extreme, in combination with the fact that all the other batches are normally distributed, we will assume a normal distribution for the following tests.
+In the previous section we observed that the data does not seem to follow a normal distribution. In order to perform parametric tests that assume normality, we must then transform the data. We will transform the data using the well-known log transformation and then check for each batch what the p-value of the Shapiro-Wilk test is in order to confirm that the transformation had the desired effect.
+<<echo=FALSE, results="asis">>=
+library(xtable)
+sw_log_batchB0 = shapiro.test(log(batchB0$OUTCOME))$p.value
+sw_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"), 
+                          "p-value"=c(sw_log_batchB0, shapiro.test(log(batchB1$OUTCOME))$p.value,
+                                      shapiro.test(log(batchB2$OUTCOME))$p.value, shapiro.test(log(batchB3$OUTCOME))$p.value,
+                                      shapiro.test(log(batchB4$OUTCOME))$p.value, shapiro.test(log(batchB5$OUTCOME))$p.value,
+                                      shapiro.test(log(batchB6$OUTCOME))$p.value, shapiro.test(log(batchB7$OUTCOME))$p.value))
+xtable(sw_log_frame)
+@
+Only the p-value of batch B0 $= \Sexpr{sw_log_batchB0} < 0.05$, which means that only in that batch normality is rejected according to the Shapiro-Wilk test, but it must be noted that the p-value is not very small so this test may not be conclusive. When we perform the skewness and kurtosis tests, we obtain values of 1.36 and 0.51 respectively. This means that although the kurtosis is in the appropriate range to be normally distributed, the skewness of the data is a bit too high. The data is skewed right, which probably is the reason that the Shapiro-Wilk test rejects a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the results of the skewness and kurtosis tests are not very extreme, in combination with the fact that all the other batches are normally distributed, we will assume a normal distribution for the following tests.
 \subsubsection{T-Test}
 To see which t-test we have to perform, we have analysed the variance of all the batches. The variance differs from each batch, as can be see in the table below. Because of that, we will perform a t-test that assumes unequal variances. 
 \begin{center}
