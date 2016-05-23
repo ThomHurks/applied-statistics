@@ -58,7 +58,7 @@ We will perform a serial correlation test on the means of each batches. The seri
 \section{Results}
 \subsection{QQ Plot and Shapiro-Wilk}
 The first step is to generate a normal QQ plot for batch 0 as an easy visual confirmation of normality.
-<<figure1, fig.cap="QQ Plot", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
+<<figure1, fig.cap="QQ Plot of batch 0", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
 qqnorm(batchB0$OUTCOME)
 qqline(batchB0$OUTCOME)
 swtestB0 = shapiro.test(batchB0$OUTCOME)
@@ -66,7 +66,7 @@ swtestB0 = shapiro.test(batchB0$OUTCOME)
 \FloatBarrier
 The normal QQ plot already seems to suggest that batch 0 is not normally distributed. When we also perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtestB0$p.value} < 0.05$ so we can reject the null-hypothesis that the outcome is normally distributed.\\\\
 Next we can generate a normal QQ plot for the other, possible affected, batches 1 to 7. Of course generating this plot for multiple batches at once assumes that the units are somewhat consistent across different batches.
-<<figure2, fig.cap="QQ Plot", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
+<<figure2, fig.cap="QQ Plot of batches 1 to 7", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
 qqnorm(batchB1toB7$OUTCOME)
 qqline(batchB1toB7$OUTCOME)
 swtestB0toB7 = shapiro.test(batchB1toB7$OUTCOME)
@@ -87,6 +87,13 @@ sw_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"
 xtable(sw_log_frame)
 @
 Only the p-value of batch B0 $= \Sexpr{sw_log_batchB0} < 0.05$, which means that only in that batch normality is rejected according to the Shapiro-Wilk test, but it must be noted that the p-value is not very small so this test may not be conclusive.
+We can generate a normal QQ-plot to get more insight into the log transformed batch 0.
+<<figure3, fig.cap="QQ Plot of the log of batch 0", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
+qqnorm(log(batchB0$OUTCOME))
+qqline(log(batchB0$OUTCOME))
+@
+\FloatBarrier
+Agreeing with our assessment of the Shapiro-Wilk test, we can see that the data seems close to normality, but not quite. We must perform further tests to check if the normality assumption is reasonable for batch 0.
 \subsubsection{Skewness and Kurtosis}
 <<echo=FALSE>>=
 library(moments)
@@ -94,7 +101,7 @@ kurtosis_log_B0 = moments::kurtosis(log(batchB0$OUTCOME))
 skewness_log_B0 = moments::skewness(log(batchB0$OUTCOME))
 jb_log_B0 = as.numeric(unlist(jarque.test(log(batchB0$OUTCOME)))["p.value"])
 @
-In order to determine if the normality assumption for batch 0 is reasonable, we can perform other tests. We can compute the skewness and kurtosis metrics and observe that for batch 0 they are $\Sexpr{skewness_log_B0}$ and $\Sexpr{kurtosis_log_B0}$ respectively. This means that although the kurtosis is in the appropriate range to be normally distributed, the skewness of the data is a bit too high. This kind of test is also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is $\Sexpr{jb_log_B0} > 0.05$. The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the skewness, kurtosis and Jarque-Bera tests seem to suggest a close-to-normal shape. In combination with the fact that for all the other batches we cannot reject the normality null hypothesis, we will assume that batch 0 is normally distributed for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
+In order to determine if the normality assumption for batch 0 is reasonable, we can perform other tests. We can compute the skewness and kurtosis metrics and observe that for batch 0 they are $\Sexpr{skewness_log_B0}$ and $\Sexpr{kurtosis_log_B0}$ respectively. This means that although the kurtosis is in the appropriate range to be normally distributed, the skewness of the data is a bit too high. This kind of test is also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is $\Sexpr{jb_log_B0} > 0.05$, so it cannot reject the normality hypothesis based on skewness and kurtosis. The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the skewness, kurtosis and Jarque-Bera tests seem to suggest a close-to-normal shape. In combination with the fact that for all the other batches we cannot reject the normality null hypothesis, we will assume that batch 0 is normally distributed for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
 \subsubsection{T-Test}
 To see which t-test we have to perform, we have analysed the variance of all the batches. The variance differs from each batch, as can be see in the table below. Because of that, we will perform a t-test that assumes unequal variances. 
 \begin{center}
