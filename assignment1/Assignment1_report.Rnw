@@ -2,6 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{placeins}
 \usepackage{longtable,framed}
+\usepackage{amsmath}
 
 <<echo=FALSE>>=
 library(sas7bdat)
@@ -15,13 +16,8 @@ batchB5 = dataset[dataset$BATCH == "B5",]
 batchB6 = dataset[dataset$BATCH == "B6",]
 batchB7 = dataset[dataset$BATCH == "B7",]
 @
-<<>>=
-<<>>=
 
-@
-
-@
-
+\begin{document}
 \title{Analysis of silicone contamination of batches}
 
 \author{
@@ -37,8 +33,6 @@ Rik Coenders & \textit{0777004}
 }
 
 \date{\today}
-
-\begin{document}
 
 \maketitle
 \tableofcontents
