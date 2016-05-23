@@ -103,38 +103,32 @@ jb_log_B0 = as.numeric(unlist(jarque.test(log(batchB0$OUTCOME)))["p.value"])
 @
 In order to determine if the normality assumption for batch 0 is reasonable, we can perform other tests. We can compute the skewness and kurtosis metrics and observe that for batch 0 they are $\Sexpr{skewness_log_B0}$ and $\Sexpr{kurtosis_log_B0}$ respectively. This means that although the kurtosis is in the appropriate range to be normally distributed, the skewness of the data is a bit too high. This kind of test is also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is $\Sexpr{jb_log_B0} > 0.05$, so it cannot reject the normality hypothesis based on skewness and kurtosis. The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the skewness, kurtosis and Jarque-Bera tests seem to suggest a close-to-normal shape. In combination with the fact that for all the other batches we cannot reject the normality null hypothesis, we will assume that batch 0 is normally distributed for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
 \subsubsection{T-Test}
-To see which t-test we have to perform, we have analysed the variance of all the batches. The variance differs from each batch, as can be see in the table below. Because of that, we will perform a t-test that assumes unequal variances. 
-\begin{center}
-\begin{tabular}{| l | l |}
-\hline
- Batch & P-value \\ \hline 
-B0 & 0.9399675  \\ \hline 
-B1 & 0.3146983  \\ \hline 
-B2 & 1.446813  \\ \hline 
-B3 & 0.6830243  \\ \hline 
-B4 & 0.1557867  \\ \hline 
-B5 & 0.2116048  \\ \hline 
-B6 & 0.3831803  \\ \hline 
-B7 & 0.4372429 \\ 
-\hline 
-\end{tabular}
-\end{center}
-The results of the t-test can be found in the following table:
-\begin{center}
-\begin{tabular}{| l | l |}
-\hline
-Batch & P-value \\ \hline 
-B1 & 0.3972427 \\ \hline 
-B2 &  0.03181353 \\ \hline 
-B3 &  0.004011126 \\ \hline 
-B4 & 0.1210506  \\ \hline 
-B5 & 0.1191315  \\ \hline 
-B6 & 0.4672437  \\ \hline 
-B7 & 0.02896952 \\ 
-\hline 
-\end{tabular}
-\end{center}
-The results indicate that batches 2, 3 and 7 have a mean that is different from the mean of the unaffected batch. This could indicate that these batches are affected.
+We can use a t-test to compare the batches, since we could not reject the null hypothesis that the log-transformed batches are normally distributed.
+To see which t-test variant we need to perform, we need to analyse the variance of all the log-transformed batches.
+<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
+var_log_B7 = var(log(batchB7$OUTCOME[!is.nan(batchB7$OUTCOME)]))
+variance_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"), 
+                              "variance"=c(var(log(batchB0$OUTCOME)), var(log(batchB1$OUTCOME)), var(log(batchB2$OUTCOME)), var(log(batchB3$OUTCOME)),
+                                           var(log(batchB4$OUTCOME)), var(log(batchB5$OUTCOME)), var(log(batchB6$OUTCOME)), var_log_B7))
+library(xtable)
+xtable(variance_log_frame)
+@
+The variance differs between batches, as can be seen in the preceding table. Because of that, we will perform a t-test that assumes unequal variances. It must be noted that batch 7 has one missing value.\\
+The results of the t-tests can be found in the following table:
+<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
+ttest_B1 <- t.test(log(batchB0$OUTCOME), log(batchB1$OUTCOME), var.equal = FALSE)$p.value
+ttest_B2 <- t.test(log(batchB0$OUTCOME), log(batchB2$OUTCOME), var.equal = FALSE)$p.value
+ttest_B3 <- t.test(log(batchB0$OUTCOME), log(batchB3$OUTCOME), var.equal = FALSE)$p.value
+ttest_B4 <- t.test(log(batchB0$OUTCOME), log(batchB4$OUTCOME), var.equal = FALSE)$p.value
+ttest_B5 <- t.test(log(batchB0$OUTCOME), log(batchB5$OUTCOME), var.equal = FALSE)$p.value
+ttest_B6 <- t.test(log(batchB0$OUTCOME), log(batchB6$OUTCOME), var.equal = FALSE)$p.value
+ttest_B7 <- t.test(log(batchB0$OUTCOME), log(batchB7$OUTCOME), var.equal = FALSE)$p.value
+ttest_log_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7"), 
+                              "p-value"=c(ttest_B1, ttest_B2, ttest_B3, ttest_B4, ttest_B5, ttest_B6, ttest_B7))
+library(xtable)
+xtable(ttest_log_frame)
+@
+The results indicate that batches two, three and seven have a mean that is different from the mean of the unaffected batch, since their p-values are less than $0.05$. This could indicate that these batches are affected.
 \subsubsection{Homogeneity tests}
 Performing the Barlett's tests gives us a p-value of $4,523*10^{-15}$. This rejects the null hypothesis that all the batches have the same variance. After performing an F-test that compares all the batches with batch 0, we have found the following results:
 \begin{center}
