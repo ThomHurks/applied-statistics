@@ -130,7 +130,7 @@ xtable(ttest_log_frame)
 @
 The results indicate that batches two, three and seven have a mean that is different from the mean of the unaffected batch, since their p-values are less than $0.05$. This could indicate that these batches are affected.
 \subsubsection{Homogeneity tests}
-Performing the Barlett's tests gives us a p-value of $4,523*10^{-15}$. This rejects the null hypothesis that all the batches have the same variance. After performing an F-test that compares all the batches with batch 0, we have found the following results:
+Performing the Barlett's tests gives us a p-value of $\Sexpr{as.numeric(unlist(bartlett.test(dataset$OUTCOME~dataset$BATCH))["p.value"])} < 0.01$. This rejects the null hypothesis that all the batches have the same variance. After performing an F-test that compares all the batches with batch 0, we have found the following results:
 \begin{center}
 \begin{tabular}{| l | l |}
 \hline
@@ -169,7 +169,7 @@ serialCorB6 = unlist(serialCorrelationTest(batchB6$OUTCOME[!is.nan(batchB6$OUTCO
 serialCorB7 = unlist(serialCorrelationTest(batchB7$OUTCOME[!is.nan(batchB7$OUTCOME)], test = "rank.von.Neumann")["p.value"])
 serial_cor_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"), 
                               "p-value"=c(serialCorB0, serialCorB1, serialCorB2, serialCorB3,
-                                            serialCorB4, serialCorB5, serialCorB6, serialCorB7))
+                                          serialCorB4, serialCorB5, serialCorB6, serialCorB7))
 library(xtable)
 xtable(serial_cor_frame)
 @
