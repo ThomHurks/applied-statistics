@@ -2,7 +2,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{placeins}
 \usepackage{longtable,framed}
-\usepackage{amsmath}
+\usepackage{amsmath,amssymb}
 
 <<echo=FALSE>>=
 library(sas7bdat)
@@ -50,8 +50,18 @@ To decide which of the batches are affected, if any, we perform both parametric 
 \subsection{Critical value}
 Most of our hypothesis include multiple comparisons. Because of this reason, we have to adjust the critical value to make sure that it will not reject batches too soon. Applying Bonferroni will give us an $\alpha=\frac{0,05}{7}=0,00714$, but since this value is quite low, it can be the case that too many batches will pass the test. Because we are dealing with dangerous materials, we will raise the alpha value slightly to prevent batches from passing the test even though they could be infected. To be a bit more strict, we will set the critical value to $0.01$.
 \subsection{Normal distribution}
-To decide whether the data is normally distributed, we will plot the data to get an insight in how the data is distributed. We will then perform the Shapiro-Wilk tests on each of the batches to check whether we can reject the null hypothesis that the data comes from a normal distribution. We will perform a skewness and kurtosis test to see whether batch 0 is in the appropriate range of skewness (between -0,3 and 0,3) and in the appropriate range of kurtosis (between -0,5 and 1,5). $\alpha=0,05$ is chosen as the critical value. If we can indeed conclude that the batches are normally distributed, we can compare each batch with batch 0 using a t-test. If, however, the data is not normally distributed, we may apply a transformation to remove skewness and bring the data closer to a normal distribution. If a transformation is necessary, we must be careful to draw conclusions about the original untransformed data, however. Because batch 0 is produced before the leakage was discovered, we know that the mean and variance of the amount of silicones found in each batch should be similar to the amount of silicone in batch 0. Therefore our hypothesis is the following:
+To decide whether the data is normally distributed, we will plot the data to get an insight in how the data is distributed. We will then perform the Shapiro-Wilk tests on each of the batches to check whether the data is now normally distributed. We formulate the hypothesis as following:
 \begin{align}
+\label{normal}
+\begin{cases}
+H_0: B_i \sim N & \quad \text{for} 1 \leq i \leq 7 \\
+H_1: B_i\nsim N
+\end{cases}
+\end{align}
+We will reject $H_0$ if $p < 0,01$. Besides a Shapiro-Wilk test, we will perform skwewness and kurtosis tests to test on where normality is violated. The values for skewness should be between -0,03 and 0,3, while the values of kurtosis should be between -0,5 and 1,5. We will perform a Jarque-Bera test to see if it is appropriate to reject a normal distribution based on skewness and kurtosis. The null hypothesis is the same as with the Shapiro-Wilk test, which can be found in equation \ref{normal}.
+If, however, the data is not normally distributed, we will apply a transformation to remove skewness and bring the data closer to a normal distribution. If a transformation is necessary, we must be careful to draw conclusions about the original untransformed data, however. Because batch 0 is produced before the previous inspection where no leakage was discovered, we know that the mean and variance of the amount of silicones found in each batch should be similar to the amount of silicone in batch 0. Therefore our hypothesis is the following:
+\begin{align}
+\label{means}
 \begin{cases}
 H_0: \mu_0 = \mu_i & \quad \text{for} 1 \leq i \leq 7 \\
 H_1: \mu_0 \neq \mu_i & \quad \text{for} 1 \leq i \leq 7
@@ -60,7 +70,9 @@ H_1: \mu_0 \neq \mu_i & \quad \text{for} 1 \leq i \leq 7
 If the result of the t-test is less than $0.01$, we will reject the null hypothesis. \\\\
 Besides performing a t-test, we will also perform some homogeneity tests to see whether the data also share the same characteristics. To check if this is the case, we will perform a Barlett's test, which checks whether all the variances of the batches are equal to each other. The null hypothesis of that test is that all variances are equal, and thus that the sets are homogeneous. We will also perform an F-test to see which batches have similar properties as batch 0.
 \subsection{Non-parametric tests}
-We will perform a serial correlation test on the means of each batches. The serial correlation test is Von Neumann with lag-1 autocorrelation. As a null hypothesis we will assume that the means are random. If they are random, than there will be no clear pattern. This is expected if no of the batches will be affected. We will reject the null hypothesis is $p<0.05$.
+\subsubsection{Wilcoxon}
+\subsubsection{Serial correlation test on the means}
+We will perform a serial correlation test on the means of the batches. The serial correlation test is Von Neumann with lag-1 autocorrelation. The null hypothesis is that the means of the batches are random. If this indeed is the case, this is an indication that none of the batches is affected by the silicones. We will reject the null hypothesis if $p<0.05$.
 \section{Results}
 \subsection{QQ Plot and Shapiro-Wilk}
 The first step is to generate a normal QQ plot for batch 0 as an easy visual confirmation of normality.
@@ -70,7 +82,7 @@ qqline(batchB0$OUTCOME)
 swtestB0 = shapiro.test(batchB0$OUTCOME)
 @
 \FloatBarrier
-The normal QQ plot already seems to suggest that batch 0 is not normally distributed. When we also perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtestB0$p.value} < 0.05$ so we can reject the null-hypothesis that the outcome is normally distributed.\\\\
+The normal QQ plot already seems to suggest that batch 0 is not normally distributed. When we also perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtestB0$p.value} < 0.01$ so we can reject the null-hypothesis that the outcome is normally distributed.\\\\
 Next we can generate a normal QQ plot for the other, possible affected, batches 1 to 7. Of course generating this plot for multiple batches at once assumes that the units are somewhat consistent across different batches.
 <<figure2, fig.cap="QQ Plot of batches 1 to 7", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
 qqnorm(batchB1toB7$OUTCOME)
@@ -78,7 +90,7 @@ qqline(batchB1toB7$OUTCOME)
 swtestB0toB7 = shapiro.test(batchB1toB7$OUTCOME)
 @
 \FloatBarrier
-The normal QQ plot here too seems to suggest that the data is not normally distributed. When we again perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtestB0toB7$p.value} < 0.05$ so we can reject the null-hypothesis that the outcome of batches 1 to 7 is normally distributed.\\\\
+The normal QQ plot here too seems to suggest that the data is not normally distributed. When we again perform the Shapiro-Wilk normality test we can see the p-value $= \Sexpr{swtestB0toB7$p.value} < 0.01$ so we can reject the null-hypothesis that the outcome of batches 1 to 7 is normally distributed.\\\\
 \subsection{Normal distribution}
 \subsubsection{Shapiro-Wilk on log-transformed data}
 In the previous section we observed that the data does not seem to follow a normal distribution. In order to perform parametric tests that assume normality, we must then transform the data. We will transform the data using the well-known log transformation and then check for each batch what the p-value of the Shapiro-Wilk test is in order to confirm that the transformation had the desired effect.
@@ -99,7 +111,7 @@ qqnorm(log(batchB0$OUTCOME))
 qqline(log(batchB0$OUTCOME))
 @
 \FloatBarrier
-\subsubsection{Skewness and Kurtosis}
+\subsection{Skewness and Kurtosis}
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(e1071)
 
@@ -108,14 +120,14 @@ skewness = list();
 kurtosis = list();
 
 for(batch in batches) {
-  Bi = dataset[dataset$BATCH == batch,]$LOGOUTCOME
-  skewness[batch] <-skewness(Bi);
-  kurtosis[batch] <-kurtosis(Bi);
+  Bi = dataset[dataset$BATCH == batch,]$OUTCOME
+  skewness[batch] <-skewness(Bi, type=2);
+  kurtosis[batch] <-kurtosis(Bi, type=2);
 }
 kurtosis_skewness = data.frame(
                               "kurtosis"= unlist(kurtosis), "skewness" = unlist(skewness))
 library(xtable)
-xtable(kurtosis_skewness)
+xtable(kurtosis_skewness, digits = c(0,3,3))
 @
 \FloatBarrier
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
@@ -125,7 +137,7 @@ batches = unique(dataset$BATCH)
 jarqueje = list();
 
 for(batch in batches) {
-  Bi = dataset[dataset$BATCH == batch,]$LOGOUTCOME
+  Bi = dataset[dataset$BATCH == batch,]$OUTCOME
   jarqueje[batch] <- as.numeric(unlist(jarque.test(Bi))["p.value"])
 }
 jarque_bera = data.frame(
@@ -143,9 +155,9 @@ variance_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6"
                               "variance"=c(var(log(batchB0$OUTCOME)), var(log(batchB1$OUTCOME)), var(log(batchB2$OUTCOME)), var(log(batchB3$OUTCOME)),
                                            var(log(batchB4$OUTCOME)), var(log(batchB5$OUTCOME)), var(log(batchB6$OUTCOME)), var_log_B7))
 library(xtable)
-xtable(variance_log_frame)
+xtable(variance_log_frame,digits=c(0,3,3))
 @
-The variance differs between batches, as can be seen in the preceding table. Because of that, we will perform a t-test that assumes unequal variances. It must be noted that batch 7 has one missing value.\\
+The variance differs between batches, as can be seen in the preceding table. Because of that, we will perform a t-test that assumes unequal variances. It must be noted that batch seven has one missing value.\\
 The results of the t-tests can be found in the following table:
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 ttest_B1 <- t.test(log(batchB0$OUTCOME), log(batchB1$OUTCOME), var.equal = FALSE)$p.value
@@ -160,33 +172,30 @@ ttest_log_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7"),
 library(xtable)
 xtable(ttest_log_frame)
 @
-The results indicate that batches two, three and seven have a mean that is different from the mean of the unaffected batch, since their p-values are less than $0.05$. This could indicate that these batches are affected.
+The results indicate that batch three has a mean that is significanlty different from the mean of the unaffected batch, since its p-value is less than $0.01$. This could indicate that this batch is affected.
 \subsubsection{Homogeneity tests}
 Performing the Barlett's tests gives us a p-value of $\Sexpr{as.numeric(unlist(bartlett.test(dataset$OUTCOME~dataset$BATCH))["p.value"])} < 0.01$. This rejects the null hypothesis that all the batches have the same variance. After performing an F-test that compares all the batches with batch 0, we have found the following results:
-\begin{center}
-\begin{tabular}{| l | l |}
-\hline
-Batch & P-value \\ \hline 
-B1 & 0.04429337 \\ \hline 
-B2 &  0.003227914 \\ \hline 
-B3 & 0.06260923\\ \hline 
-B4 & $4.570405*10^{-7}$  \\ \hline 
-B5 & 0.08812147  \\ \hline 
-B6 & 0.266533  \\ \hline 
-B7 & 0.9583088 \\ 
-\hline 
-\end{tabular}
-\end{center}
-These results indicate that batch 1, 2, and 4 have different properties than batch 0. 
+<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
+vartestvalues = list()
+for (batch in batches) {
+  Bi = log(dataset[dataset$BATCH == batch,]$OUTCOME)
+  vartestvalues[batch] <- var.test(log(batchB0$OUTCOME),Bi)$p.value
+}
+vartestvalues <- vartestvalues[-vartestvalues$B0]
+var_log_frame = data.frame("F-test"=unlist(vartestvalues))
+library(xtable)
+xtable(var_log_frame,digits=c(0,3))
+@
+These results indicate that batch four has different properties from the other batches.
 \subsection{Non-parametric tests}
 \subsubsection{Serial correlation tests with means}
-We have performed a Rank von Neumann Test for lag-1. The p-value is $0.4895337 < 0.05$ and we therefore have to reject the null hypothesis. This means that the serial correlation test detects some pattern in the means of the batches. 
+We have performed a Rank von Neumann Test for lag-1. The p-value is $0.4895337 < 0.01$ and we therefore cannot reject the null hypothesis. This indicates that no significant pattern can be found. This could indicate that the silicones have affected only one or two batches and not all batches from the point the leakage has started. 
 \subsubsection{Wald-Wolfowitz Runs Test}
 <<echo=FALSE, message=FALSE, warning=FALSE, results="hide">>=
 library(adehabitatLT)
 wawo <- wawotest(dataset$OUTCOME)
 @
-We have performed a Wald-Wolfowitz Runs test. We see that the p-value $=\Sexpr{wawo["p"]} < 0.05$ so we can reject that null hypothesis. This is an interesting result, because we know the data is obtained from the same source, but part of the samples may or may not be tainted, and this result may point to that being true.\\
+We have performed a Wald-Wolfowitz Runs test. We see that the p-value $=\Sexpr{wawo["p"]} < 0.01$ so we can reject that null hypothesis. This is an interesting result, because we know the data is obtained from the same source. This indeed indicates that some of the outcomes \\
 \subsubsection{Rank Serial Correlation Test}
 Here we perform the rank serial autocorrelation test at lag 1 using the rank von Neumann ratio. This tests the null hypothesis that the lag-$k$ autocorrelation is $0$ for all values of $k$ greater than $0$ (i.e., the time series is purely random). The procedure that we use emits some warnings because the dataset contains ties, and with this specific test that can make the p-value less accurate. With that warning in mind, we present the table containing the rank serial autocorrelation test p-values of each batch:\\
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
@@ -207,5 +216,4 @@ xtable(serial_cor_frame)
 @
 As one can observe, the p-values are all large, which means that we cannot reject the null hypothesis that the batches are random using this test.
 \section{Conclusion}
-
 \end{document}
