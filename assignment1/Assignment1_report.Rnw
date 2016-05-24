@@ -7,6 +7,7 @@
 <<echo=FALSE>>=
 library(sas7bdat)
 dataset = read.sas7bdat("assignment1.sas7bdat")
+dataset = dataset[!is.nan(dataset$OUTCOME),]
 batchB0 = dataset[dataset$BATCH == "B0",]
 batchB1 = dataset[dataset$BATCH == "B1",]
 batchB2 = dataset[dataset$BATCH == "B2",]
@@ -120,7 +121,7 @@ xtable(kurtosis_skewness)
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(moments)
 
-batches = unique(dataset$BATCH);
+batches = unique(dataset$BATCH)
 jarqueje = list();
 
 for(batch in batches) {
