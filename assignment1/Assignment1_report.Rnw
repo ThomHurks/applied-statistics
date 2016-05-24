@@ -16,6 +16,7 @@ batchB5 = dataset[dataset$BATCH == "B5",]
 batchB6 = dataset[dataset$BATCH == "B6",]
 batchB7 = dataset[dataset$BATCH == "B7",]
 batchB1toB7 = dataset[dataset$BATCH != "B0",]
+dataset$LOGOUTCOME = log(dataset$OUTCOME)
 @
 
 \begin{document}
@@ -44,14 +45,18 @@ The health inspection has detected a silicone leakage in a machine used in a che
 In the first section we describe which methods we use to find the affected batches. In the next section we will describe what the results of these methods are. Lastly, we will conclude which of the batches are affected. In this section we will also describe what the weaknesses and risks are of our investigation.
 \newpage
 \section{Methods}
-To decide which of the batches are affected, if any, we perform both parametric and non-parametric tests. The parametric tests assume that the data is normally distributed, which means we must test for normality and if necessary transform the data. Non-parametric tests are generally less powerful than parametric tests, but can always be applied regardless of normality. With parametric tests one must be careful to draw conclusions about the original non-transformed data if the data needs to be transformed in order to meet the normality assumption. As a start, we will plot the data and perform a Shapiro-Wilk test to see whether the non-transformed data is normal. After that, we will perform a Wald-Wolfowitz Runs Test which has as a null hypothesis that each element in the sequence is independently drawn from the same random distribution; if this is not the case, that could be an indicator that some of the batches are affected by silicones. We reject the null hypothesis if $p < 0.05$.
+To decide which of the batches are affected, if any, we perform both parametric and non-parametric tests. The parametric tests assume that the data is normally distributed, which means we must test for normality and if necessary transform the data. Non-parametric tests are generally less powerful than parametric tests, but can always be applied regardless of normality. With parametric tests one must be careful to draw conclusions about the original non-transformed data if the data needs to be transformed in order to meet the normality assumption. As a start, we will plot the data and perform a Shapiro-Wilk test to see whether the non-transformed data is normal. After that, we will perform a Wald-Wolfowitz Runs Test which has as a null hypothesis that each element in the sequence is independently drawn from the same random distribution; if this is not the case, that could be an indicator that some of the batches are affected by silicones. We reject the null hypothesis if $p < 0.01$.
+\subsection{Critical value}
+Most of our hypothesis include multiple comparisons. Because of this reason, we have to adjust the critical value to make sure that it will not reject batches too soon. Applying Bonferroni will give us an $\alpha=\frac{0,05}{7}=0,00714$, but since this value is quite low, it can be the case that too many batches will pass the test. Because we are dealing with dangerous materials, we will raise the alpha value slightly to prevent batches from passing the test even though they could be infected. To be a bit more strict, we will set the critical value to $0.01$.
 \subsection{Normal distribution}
 To decide whether the data is normally distributed, we will plot the data to get an insight in how the data is distributed. We will then perform the Shapiro-Wilk tests on each of the batches to check whether we can reject the null hypothesis that the data comes from a normal distribution. We will perform a skewness and kurtosis test to see whether batch 0 is in the appropriate range of skewness (between -0,3 and 0,3) and in the appropriate range of kurtosis (between -0,5 and 1,5). $\alpha=0,05$ is chosen as the critical value. If we can indeed conclude that the batches are normally distributed, we can compare each batch with batch 0 using a t-test. If, however, the data is not normally distributed, we may apply a transformation to remove skewness and bring the data closer to a normal distribution. If a transformation is necessary, we must be careful to draw conclusions about the original untransformed data, however. Because batch 0 is produced before the leakage was discovered, we know that the mean and variance of the amount of silicones found in each batch should be similar to the amount of silicone in batch 0. Therefore our hypothesis is the following:
 \begin{align}
-H_0: \mu_0 = \mu_i \text{for} 1 \leq i \leq 7
-H_1 \mu_0 \neq \mu_i \text{for} 1 \leq i \leq 7
+\begin{cases}
+H_0: \mu_0 = \mu_i & \quad \text{for} 1 \leq i \leq 7 \\
+H_1: \mu_0 \neq \mu_i & \quad \text{for} 1 \leq i \leq 7
+\end{cases}
 \end{align}
-If the result of the t-test is less than $0.05$, we will reject the null hypothesis. \\\\
+If the result of the t-test is less than $0.01$, we will reject the null hypothesis. \\\\
 Besides performing a t-test, we will also perform some homogeneity tests to see whether the data also share the same characteristics. To check if this is the case, we will perform a Barlett's test, which checks whether all the variances of the batches are equal to each other. The null hypothesis of that test is that all variances are equal, and thus that the sets are homogeneous. We will also perform an F-test to see which batches have similar properties as batch 0.
 \subsection{Non-parametric tests}
 We will perform a serial correlation test on the means of each batches. The serial correlation test is Von Neumann with lag-1 autocorrelation. As a null hypothesis we will assume that the means are random. If they are random, than there will be no clear pattern. This is expected if no of the batches will be affected. We will reject the null hypothesis is $p<0.05$.
@@ -86,22 +91,48 @@ sw_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"
                                       shapiro.test(log(batchB6$OUTCOME))$p.value, shapiro.test(log(batchB7$OUTCOME))$p.value))
 xtable(sw_log_frame)
 @
-Only the p-value of batch B0 $= \Sexpr{sw_log_batchB0} < 0.05$, which means that only in that batch normality is rejected according to the Shapiro-Wilk test, but it must be noted that the p-value is not very small so this test may not be conclusive.
+No of the batches reject normality, so using the Shapiro-Wilk test we cannot reject normality for all of the batches. 
 We can generate a normal QQ-plot to get more insight into the log transformed batch 0.
 <<figure3, fig.cap="QQ Plot of the log of batch 0", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
 qqnorm(log(batchB0$OUTCOME))
 qqline(log(batchB0$OUTCOME))
 @
 \FloatBarrier
-Agreeing with our assessment of the Shapiro-Wilk test, we can see that the data seems close to normality, but not quite. We must perform further tests to check if the normality assumption is reasonable for batch 0.
 \subsubsection{Skewness and Kurtosis}
-<<echo=FALSE>>=
-library(moments)
-kurtosis_log_B0 = moments::kurtosis(log(batchB0$OUTCOME))
-skewness_log_B0 = moments::skewness(log(batchB0$OUTCOME))
-jb_log_B0 = as.numeric(unlist(jarque.test(log(batchB0$OUTCOME)))["p.value"])
+<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
+library(e1071)
+
+batches = unique(dataset$BATCH);
+skewness = list();
+kurtosis = list();
+
+for(batch in batches) {
+  Bi = dataset[dataset$BATCH == batch,]$LOGOUTCOME
+  skewness[batch] <-skewness(Bi);
+  kurtosis[batch] <-kurtosis(Bi);
+}
+kurtosis_skewness = data.frame(
+                              "kurtosis"= unlist(kurtosis), "skewness" = unlist(skewness))
+library(xtable)
+xtable(kurtosis_skewness)
 @
-In order to determine if the normality assumption for batch 0 is reasonable, we can perform other tests. We can compute the skewness and kurtosis metrics and observe that for batch 0 they are $\Sexpr{skewness_log_B0}$ and $\Sexpr{kurtosis_log_B0}$ respectively. This means that although the kurtosis is in the appropriate range to be normally distributed, the skewness of the data is a bit too high. This kind of test is also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is $\Sexpr{jb_log_B0} > 0.05$, so it cannot reject the normality hypothesis based on skewness and kurtosis. The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the skewness, kurtosis and Jarque-Bera tests seem to suggest a close-to-normal shape. In combination with the fact that for all the other batches we cannot reject the normality null hypothesis, we will assume that batch 0 is normally distributed for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
+\FloatBarrier
+<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
+library(moments)
+
+batches = unique(dataset$BATCH);
+jarqueje = list();
+
+for(batch in batches) {
+  Bi = dataset[dataset$BATCH == batch,]$LOGOUTCOME
+  jarqueje[batch] <- as.numeric(unlist(jarque.test(Bi))["p.value"])
+}
+jarque_bera = data.frame(
+                              "Jarque-Bera"= unlist(jarqueje))
+library(xtable)
+xtable(jarque_bera)
+@
+After performing the Shapiro-Wilk test, we have performed skewness and kurtosis tests. We can compute the skewness and kurtosis metrics and observe that for batch 0 they are respectively. This means that although the kurtosis is in the appropriate range to be normally distributed, the skewness of the data is a bit too high. This kind of test is also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is , so it cannot reject the normality hypothesis based on skewness and kurtosis. The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the skewness, kurtosis and Jarque-Bera tests seem to suggest a close-to-normal shape. In combination with the fact that for all the other batches we cannot reject the normality null hypothesis, we will assume that batch 0 is normally distributed for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
 \subsubsection{T-Test}
 We can use a t-test to compare the batches, since we could not reject the null hypothesis that the log-transformed batches are normally distributed.
 To see which t-test variant we need to perform, we need to analyse the variance of all the log-transformed batches.
@@ -174,6 +205,6 @@ library(xtable)
 xtable(serial_cor_frame)
 @
 As one can observe, the p-values are all large, which means that we cannot reject the null hypothesis that the batches are random using this test.
-\section{Results}
+\section{Conclusion}
 
 \end{document}

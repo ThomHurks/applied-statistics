@@ -7,7 +7,6 @@ library(e1071)
 
 dataset <- read.sas7bdat("/Users/puckmulders/Documents/Studie/Statistics for Big Data - poging 2/assignment1.sas7bdat")
 
-data$OUTCOME <- log(data$OUTCOME)
 
 batch_0 <- dataset[which(dataset$BATCH=="B0"),]
 data <- dataset[-c(91),]
@@ -25,5 +24,3 @@ for (batch in batches) {
   
 }
 
-kurtosis(batch_0$OUTCOME)
-skewness(batch_0$OUTCOME)
