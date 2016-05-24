@@ -93,7 +93,7 @@ sw_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"
                                       shapiro.test(log(batchB2$OUTCOME))$p.value, shapiro.test(log(batchB3$OUTCOME))$p.value,
                                       shapiro.test(log(batchB4$OUTCOME))$p.value, shapiro.test(log(batchB5$OUTCOME))$p.value,
                                       shapiro.test(log(batchB6$OUTCOME))$p.value, shapiro.test(log(batchB7$OUTCOME))$p.value))
-xtable(sw_log_frame)
+xtable(sw_log_frame, digits=c(0,0,4))
 @
 No of the batches reject normality, so using the Shapiro-Wilk test we cannot reject normality for all of the batches. 
 We can generate a normal QQ-plot to get more insight into the log transformed batch 0.
@@ -134,7 +134,7 @@ for(batch in batches) {
 jarque_bera = data.frame(
                               "Jarque-Bera"= unlist(jarqueje))
 library(xtable)
-xtable(jarque_bera)
+xtable(jarque_bera, digits=c(0,4))
 @
 After performing the Shapiro-Wilk test, we have performed skewness and kurtosis tests. We can compute the skewness and kurtosis metrics and observe that for batch 0 they are respectively. This means that although the kurtosis is in the appropriate range to be normally distributed, the skewness of the data is a bit too high. This kind of test is also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is , so it cannot reject the normality hypothesis based on skewness and kurtosis. The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the skewness, kurtosis and Jarque-Bera tests seem to suggest a close-to-normal shape. In combination with the fact that for all the other batches we cannot reject the normality null hypothesis, we will assume that batch 0 is normally distributed for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
 \subsubsection{T-Test}
@@ -146,7 +146,7 @@ variance_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6"
                               "variance"=c(var(log(batchB0$OUTCOME)), var(log(batchB1$OUTCOME)), var(log(batchB2$OUTCOME)), var(log(batchB3$OUTCOME)),
                                            var(log(batchB4$OUTCOME)), var(log(batchB5$OUTCOME)), var(log(batchB6$OUTCOME)), var_log_B7))
 library(xtable)
-xtable(variance_log_frame)
+xtable(variance_log_frame, digits=c(0,0,4))
 @
 The variance differs between batches, as can be seen in the preceding table. Because of that, we will perform a t-test that assumes unequal variances. It must be noted that batch 7 has one missing value.\\
 The results of the t-tests can be found in the following table:
@@ -161,7 +161,7 @@ ttest_B7 <- t.test(log(batchB0$OUTCOME), log(batchB7$OUTCOME), var.equal = FALSE
 ttest_log_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7"), 
                               "p-value"=c(ttest_B1, ttest_B2, ttest_B3, ttest_B4, ttest_B5, ttest_B6, ttest_B7))
 library(xtable)
-xtable(ttest_log_frame)
+xtable(ttest_log_frame, digits=c(0,0,4))
 @
 The results indicate that batches two, three and seven have a mean that is different from the mean of the unaffected batch, since their p-values are less than $0.05$. This could indicate that these batches are affected.
 \subsubsection{Homogeneity tests}
@@ -206,7 +206,7 @@ serial_cor_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", 
                               "p-value"=c(serialCorB0, serialCorB1, serialCorB2, serialCorB3,
                                           serialCorB4, serialCorB5, serialCorB6, serialCorB7))
 library(xtable)
-xtable(serial_cor_frame)
+xtable(serial_cor_frame, digits=c(0,0,4))
 @
 As one can observe, the p-values are all large, which means that we cannot reject the null hypothesis that the batches are random using this test.
 
