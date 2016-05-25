@@ -49,6 +49,7 @@ The health inspection has detected a silicone leakage in a machine used in a che
 In the first section we describe which methods we use to find the affected batches. In the next section we will describe what the results of these methods are. Lastly, we will conclude which of the batches are affected. In this section we will also describe what the weaknesses and risks are of our investigation.
 \newpage
 \section{Methods}
+\subsection{Checking normality}
 To decide if any of the batches are affected, we perform both parametric and non-parametric tests. The parametric tests assume that the data is normally distributed, which means we must test for normality and if necessary transform the data. Non-parametric tests are generally less powerful than parametric tests, but can always be applied regardless of normality. With parametric tests one must be careful to draw conclusions about the original non-transformed data if the data needs to be transformed in order to meet the normality assumption. As a start, we will plot the data and perform a Shapiro-Wilk test to see whether the non-transformed data is normal. After that, we will perform a Wald-Wolfowitz Runs Test which has as a null hypothesis that each element in the sequence is independently drawn from the same random distribution; if this is not the case, that could be an indicator that some of the batches are affected by silicones. We reject the null hypothesis if $p < 0.01$.
 \subsection{Critical value}
 Most of our hypotheses include testing all seven possibly affected batches. Because of this reason, we have to adjust the commonly used critical value of $0.05$ to make sure we do not reject the null hypothesis due to chance. Applying Bonferroni will give us a critical value of $\alpha=\frac{0,05}{7}=0,00714$, but since this value is quite low we may fail to reject the null hypotheses in cases where we actually want to; our goal is to identify the affected batches, so we can be a bit more strict and raise the alpha value slightly. As such, we will set the critical value to $0.01$.
@@ -72,6 +73,15 @@ H_1: \mu_0 < \mu_i & \quad \text{for } 1 \leq i \leq 7
 \end{align}
 If the result of the t-test is less than $0.01$, we will reject the null hypothesis. \\\\
 Besides performing a t-test, we will also perform some homogeneity tests to see whether the data also share the same characteristics. To check if this is the case, we will perform a Barlett's test, which checks whether all the variances of the batches are equal to each other. The null hypothesis of that test is that all variances are equal, and thus that the sets are homogeneous. We will also perform an F-test to see which batches have similar properties as batch 0.
+\subsubsection{Outliers}
+We will perform a Grubbs outlier test on the log-transformed to check whether there are any indications that one of the measurements has some incorrect value due to for example measurement errors. We will do this for both outliers on the left and right tail. Our null hypothesis is can be found in equation \ref{outlier}.
+\begin{align}
+\begin{cases}
+H_0: \text{The data contains no outliers in batch}_i & \quad \text{for} 1 \leg i \leg 7 \\
+H_0: \text{The data contains outliers in batch}_i & \quad \text{for} 1 \leg i \leg 7 
+\end{cases}
+\end{align}
+We will reject the null hypothesis if the p-value$<0.01$.
 \subsection{Non-parametric tests}
 \subsubsection{Serial correlation test on the means}
 We will perform a serial correlation test on the means of the batches. The serial correlation test is Von Neumann with lag-1 autocorrelation. The null hypothesis is that the means of the batches are random. If this indeed is the case, this is an indication that none of the batches is affected by the silicones. We will reject the null hypothesis if $p<0.05$.
@@ -101,8 +111,7 @@ Another test to compare the clean batch with the other batches without any assum
 
 We can make the first two assumptions based on the assignment description. Although the measurements themselves have limited precision, the underlying value is continuous, which justifies the third assumption. For the last assumption, we refer to the similarity of the histograms of the different batches. 
 
-\subsection{Outliers}
-We will perform a Grubbs outlier test on the log-transformed to check whether there are any indications that one of the measurements has some incorrect value due to for example measurement errors.
+
 \section{Results}
 \subsection{QQ Plot and Shapiro-Wilk}
 The first step is to generate a normal QQ plot for batch 0 as an easy visual confirmation of normality.
@@ -220,33 +229,13 @@ xtable(var_log_frame,digits=c(0,3))
 These results indicate that batch four has different properties than the other batches.
 \subsection{Non-parametric tests}
 \subsubsection{Serial correlation tests with means}
-We have performed a Rank von Neumann Test for lag-1. The p-value is $0.490 > 0.01$ and we therefore cannot reject the null hypothesis. This indicates that no significant pattern can be found. This could indicate that the silicones have affected only one or two batches and not all batches from the point the leakage has started. 
+We have performed a Rank von Neumann Test for lag-1. The p-value is $0.490 < 0.05$ and we therefore cannot reject the null hypothesis. This indicates that no significant pattern can be found. This could indicate that the silicones have affected only one or two batches and not all batches from the point the leakage has started. 
 \subsubsection{Wald-Wolfowitz Runs Test}
 <<echo=FALSE, message=FALSE, warning=FALSE, results="hide">>=
 library(adehabitatLT)
 wawo <- wawotest(dataset$OUTCOME)
 @
-We have performed a Wald-Wolfowitz Runs test. We see that the p-value $=\Sexpr{wawo["p"]} < 0.01$ so we can reject that null hypothesis. This is an interesting result, because we know the data is obtained from the same source.
-\subsubsection{Rank Serial Correlation Test}
-Here we perform the rank serial autocorrelation test at lag 1 using the rank von Neumann ratio. This tests the null hypothesis that the lag-$k$ autocorrelation is $0$ for all values of $k$ greater than $0$ (i.e., the time series is purely random). The procedure that we use emits some warnings because the dataset contains ties, and with this specific test that can make the p-value less accurate. With that warning in mind, we present the table containing the rank serial autocorrelation test p-values of each batch:\\
-<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
-library(EnvStats)
-serialCorB0 = unlist(serialCorrelationTest(batchB0$OUTCOME[!is.nan(batchB0$OUTCOME)], test = "rank.von.Neumann")["p.value"])
-serialCorB1 = unlist(serialCorrelationTest(batchB1$OUTCOME[!is.nan(batchB1$OUTCOME)], test = "rank.von.Neumann")["p.value"])
-serialCorB2 = unlist(serialCorrelationTest(batchB2$OUTCOME[!is.nan(batchB2$OUTCOME)], test = "rank.von.Neumann")["p.value"])
-serialCorB3 = unlist(serialCorrelationTest(batchB3$OUTCOME[!is.nan(batchB3$OUTCOME)], test = "rank.von.Neumann")["p.value"])
-serialCorB4 = unlist(serialCorrelationTest(batchB4$OUTCOME[!is.nan(batchB4$OUTCOME)], test = "rank.von.Neumann")["p.value"])
-serialCorB5 = unlist(serialCorrelationTest(batchB5$OUTCOME[!is.nan(batchB5$OUTCOME)], test = "rank.von.Neumann")["p.value"])
-serialCorB6 = unlist(serialCorrelationTest(batchB6$OUTCOME[!is.nan(batchB6$OUTCOME)], test = "rank.von.Neumann")["p.value"])
-serialCorB7 = unlist(serialCorrelationTest(batchB7$OUTCOME[!is.nan(batchB7$OUTCOME)], test = "rank.von.Neumann")["p.value"])
-serial_cor_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"), 
-                              "p-value"=c(serialCorB0, serialCorB1, serialCorB2, serialCorB3,
-                                          serialCorB4, serialCorB5, serialCorB6, serialCorB7))
-library(xtable)
-xtable(serial_cor_frame, digits=c(0,0,4))
-@
-As one can observe, the p-values are all large, which means that we cannot reject the null hypothesis that the batches are random using this test.
-
+We have performed a Wald-Wolfowitz Runs test. We see that the p-value $=\Sexpr{wawo["p"]} < 0.05$ so we can reject that null hypothesis. This is an interesting result, because we know the data is obtained from the same source.
 \subsubsection{Kolmogorov-Smirnov Test}
 The results of the Kolmogorov-Smirnov test can be found in the following table. 
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
@@ -271,7 +260,6 @@ None of the batches violate the null-hypothesis, since all p-values are larger t
 \subsubsection{Wilcoxon Rank-Sum Test}
 
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
-<<<<<<< HEAD
 wilcoxB1 = unlist(wilcox.test(batchB0$OUTCOME, batchB1$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
 wilcoxB2 = unlist(wilcox.test(batchB0$OUTCOME, batchB2$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
 wilcoxB3 = unlist(wilcox.test(batchB0$OUTCOME, batchB3$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
@@ -280,16 +268,6 @@ wilcoxB5 = unlist(wilcox.test(batchB0$OUTCOME, batchB5$OUTCOME, paired=FALSE, co
 wilcoxB6 = unlist(wilcox.test(batchB0$OUTCOME, batchB6$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
 wilcoxB7 = unlist(wilcox.test(batchB0$OUTCOME, batchB7full$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
 wilcoxB7m = unlist(wilcox.test(batchB0$OUTCOME, batchB7mean$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-=======
-wilcoxB1 = unlist(wilcox.test(batchB0$OUTCOME, batchB1$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
-wilcoxB2 = unlist(wilcox.test(batchB0$OUTCOME, batchB2$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
-wilcoxB3 = unlist(wilcox.test(batchB0$OUTCOME, batchB3$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
-wilcoxB4 = unlist(wilcox.test(batchB0$OUTCOME, batchB4$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
-wilcoxB5 = unlist(wilcox.test(batchB0$OUTCOME, batchB5$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
-wilcoxB6 = unlist(wilcox.test(batchB0$OUTCOME, batchB6$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
-wilcoxB7 = unlist(wilcox.test(batchB0$OUTCOME, batchB7full$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
-wilcoxB7m = unlist(wilcox.test(batchB0$OUTCOME, batchB7mean$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
->>>>>>> origin/master
 
 wilcox_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B7*"), 
                               "p-value"=c(wilcoxB1, wilcoxB2, wilcoxB3, wilcoxB4, wilcoxB5, wilcoxB6, wilcoxB7, wilcoxB7m))
@@ -297,13 +275,7 @@ wilcox_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B7*
 library(xtable)
 xtable(wilcox_frame, digits=c(0,0,4))
 @
-<<<<<<< HEAD
-Since we reject batches if the p-value $< 0.01$, only batch 3 will reject the null hypothesis. The other batches do not show any signs of being affected by the silicones. 
-=======
-
-The null hypothesis can be discarded for B3 only if we take $\alpha =0.01$. 
-
->>>>>>> origin/master
+Since we reject batches if the p-value $< 0.01$, only batch 3 fails to pass the null hypothesis. The other batches do not deviate much from batch zero. 
 \subsection{Outliers}
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(outliers)
@@ -321,7 +293,6 @@ for(batch in batches) {
   grubbsMax$`p-value`[batch] = grubbs.test(logBi, type=10)$p.value;
 }
 @
-
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(xtable);
 xtable(as.data.frame(grubbsMin));
