@@ -105,7 +105,7 @@ We can make the first two assumptions based on the assignment description. Altho
 
 Contamination is caused by a leakage, so we expect tainted batches to generally have higher sample values. We perform a one-sided Wilcoxon Signed-Rank Test with the clean batch and each of the potentially tainted batches. 
 \subsection{Outliers}
-We will perform a Grubbs outlier test to check whether 
+We will perform a Grubbs outlier test to check whether there are any indications that one of the measurements has some incorrect value due to for example measurement errors.
 \section{Results}
 \subsection{QQ Plot and Shapiro-Wilk}
 The first step is to generate a normal QQ plot for batch 0 as an easy visual confirmation of normality.
@@ -291,6 +291,33 @@ xtable(wilcox_frame, digits=c(0,0,4))
 @
 
 None of the batches are potentially tainted if we perform a Wilcoxon Rank-Sum Test if we take $\alpha =0.01$. 
+
+\subsection{Outliers}
+<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
+library(outliers)
+
+batches = unique(dataset$BATCH);
+
+grubbsMin = list(`min`=c(),`p-value`=c());
+grubbsMax = list(`max`=c(),`p-value`=c());
+for(batch in batches) {
+  Bi = dataset[dataset$BATCH == batch,]$OUTCOME;
+  logBi = dataset[dataset$BATCH == batch,]$LOGOUTCOME;
+  grubbsMin$min[batch] = min(Bi);
+  grubbsMax$max[batch] = max(Bi);
+  grubbsMin$`p-value`[batch] = grubbs.test(logBi, type=10, opposite=TRUE)$p.value;
+  grubbsMax$`p-value`[batch] = grubbs.test(logBi, type=10)$p.value;
+}
+@
+
+<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
+library(xtable);
+xtable(as.data.frame(grubbsMin));
+@
+<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
+library(xtable);
+xtable(as.data.frame(grubbsMax));
+@
 
 \section{Conclusion}
 \end{document}

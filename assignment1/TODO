@@ -13,7 +13,9 @@ Wilcoxon Rank-Sum Test section should be adapted (has comment: A  WILCOXON  SIGN
 Wilcoxon Rank-Sum Test -> onze data is volgens mij niet gepaard, want persoon x wordt niet twee keer getest. De waardes zijn in feite onafhankelijk. Even uitzoeken, maar denk dat dit aangepast moet worden.
 
 "grubs outlier test" section should be written
+-> for results: captions for table, describing text, right positioning of tables, NaN value handling
 
 in "skewness and kurtosis" section: "The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution" but shapiro wilk was not rejected
 
 in section "Serial correlation tests with means": "This  could  indicate  that  the  silicones  have affected only one or two batches and not all batches from the point the leakage has started" this is a conclusion and should therefore be in the conclusion section
+
