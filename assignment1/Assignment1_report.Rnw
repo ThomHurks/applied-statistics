@@ -41,8 +41,9 @@ Rik Coenders & \textit{0777004}
 \date{\today}
 
 \maketitle
+\newpage
 \tableofcontents
-
+\newpage
 \section{Introduction}
 The health inspection has detected a silicone leakage in a machine used in a chemical production process. The leakage was detected in close vicinity of packed product, so the question is whether the product has been affected by the leakage. The machines are regularly inspected, and data on a batch produced before the previous inspection is available and is denoted as batch B0. Batches denoted B1 to B7 have been produced between the previous inspection and the current inspection and may have been affected by the leakage. The data consists of measurements of samples of units from the batches. The silicone that leaked is already part of the product itself, so it will always be present in the measured units to some extent. The goal of this report is to possibly identify the batches that were affected by the silicone leakage. If a batch is affected, we expect that the amount of silicones in a batch is somewhat higher in comparison with the unaffected batches. We therefore hypothesize that the affected batches have underwent a location shift such that the mean will be somewhat higher if compared with unaffected batches. \\\\
 In the first section we describe which methods we use to find the affected batches. In the next section we will describe what the results of these methods are. Lastly, we will conclude which of the batches are affected. In this section we will also describe what the weaknesses and risks are of our investigation.
@@ -55,7 +56,7 @@ Before performing any parametric or non-parametric tests, we will first perform 
 \label{normal}
 \begin{cases}
 H_0: B_i \sim \mathcal{N} & \quad \text{for } 1 \leq i \leq 7 \\
-H_1: B_i\nsim \mathcal{N} & \quad \text{for } 1 \leq i \leq 7 \\
+H_1: B_i\nsim \mathcal{N}  \\
 \end{cases}
 \end{align} 
 We will reject the null hypothesis if the p-value $< 0.01$.
@@ -73,25 +74,39 @@ Because batch 0 is produced before the previous inspection where no leakage was 
 \label{means}
 \begin{cases}
 H_0: \mu_0 \geq \mu_i & \quad \text{for } 1 \leq i \leq 7 \\
-H_1: \mu_0 < \mu_i & \quad \text{for } 1 \leq i \leq 7
+H_1: \mu_0 < \mu_i
 \end{cases}
 \end{align}
 If the result of the t-test is less than $0.01$, we will reject the null hypothesis.
-\subsubsection{F-test}
-Besides performing a t-test, we will also perform some homogeneity tests to see whether the data also share the same characteristics. To check if this is the case, we will perform a Barlett's test, which checks whether all the variances of the batches are equal to each other. The null hypothesis of that test is that all variances are equal, and thus that the sets are homogeneous. Besides that we will perform an F-test to see which batches have similar properties as batch 0.
+\subsubsection{Variance testing}
+Besides performing a t-test, we will also perform some homogeneity tests to see whether the data also share the same characteristics. To check if this is the case, we will perform a Barlett's test, which checks whether all the variances of the batches are equal to each other. This can be formulated as can be found in \ref{barlet}:
+\begin{align}
+\label{barlet}
+\begin{cases}
+H_0: \sigma_0 = \sigma_1 = \sigma_2 ... = \sigma_7  \\
+H_1: \sigma_0 \neq \sigma_1 \neq \sigma_2 ... \neq \sigma_7
+\end{cases}
+\end{align}
+We will reject the null hypothesis if p-value $< 0.05$. Besides Barlett's test we will perform an F-test to see which batches have similar properties as batch 0. This can be formulated as can be found in equation \ref{ftest}:
+\begin{align}
+\label{ftest}
+\begin{cases}
+H_0: \sigma_0 = \sigma_i & \quad \text{for } 1 \leq i \leq 7 \\
+H_1: \sigma_0 \neq \sigma_i
+\end{cases}
+\end{align}
+We will reject the null hypothesis if the p-value $<0.01$.
 \subsubsection{Outliers}
 We will perform a Grubbs outlier test on the log-transformed to check whether there are any indications that one of the measurements has some incorrect value due to for example measurement errors. We will do this for both outliers on the left and right tail. Our null hypothesis is can be found in equation \ref{outlier}.We will reject the null hypothesis if the p-value $< 0.01$.
 \begin{align}
 \label{outlier}
 \begin{cases}
 H_0: \text{Batch}_i \text{ contains no outliers} & \quad \text{for } 1 \leq i \leq 7 \\
-H_1: \text{Batch}_i \text{ contains outliers} \quad \text{for } 1 \leq i \leq 7 \\
+H_1: \text{Batch}_i \text{ contains outliers} \\
 \end{cases}
 \end{align}
 We will reject the null hypothesis if the p-value$<0.01$.
 \subsection{Non-parametric tests}
-\subsubsection{Serial correlation test on the means}
-We will perform a serial correlation test on the means of the batches. The serial correlation test is Von Neumann with lag-1 autocorrelation. The null hypothesis is that the means of the batches are random. If this indeed is the case, this is an indication that none of the batches is affected by the silicones. We will reject the null hypothesis if $p<0.05$.
 \subsubsection{Kolmogorov-Smirnov Test}
 If the non-transformed data does not follow a normal distribution, we will also perform some non-parametric tests that do not assume a normal distribution. Such a parametric test is the Kolgomorov-Smirnov Test. For the two-sample version of this test, we need to make the following assumptions:
 \begin{itemize}
@@ -99,18 +114,19 @@ If the non-transformed data does not follow a normal distribution, we will also 
   \item The outcomes are ordinal or numerical.
 \end{itemize}
 Since the results of the samples do not depend on each other, the first assumption can be made. Second, the outcomes are all numerical so the second assumption can be made too. We perform a two-sided test to get a general view of whether non-parametric testing picks up on any differiations between the distributions of batch 0 and the other batches. Our hypothesis is the following:
-We will reject the null hypothesis when $p < 0.01$. Because batch 7 has a missing value, we have decided to impute the mean of batch 7 into the line with the missing value, to see whether this affects the test. The Kolmogorov-Smirnov test will not give the exact p-value due ties in the data, so it could be the case that the p-value retrieved from the test somewhat deviates from the real test. Because we have picked a somewhat high critical value, we will not accept batches that could be infected. 
+We will reject the null hypothesis when $p < 0.01$. Because batch 7 has a missing value, we have decided to impute the mean of batch 7 into the line with the missing value, to see whether this affects the test. The Kolmogorov-Smirnov test will not give the exact p-value due ties in the data, so it could be the case that the p-value retrieved from the test somewhat deviates from the real p-value. Because we have picked a somewhat high critical value, some bias of p-values can be handled.
 \subsubsection{Wilcoxon Rank-Sum Test}
-A second non-parametric test we will perform is the Wilcoxon Rank-Sum Test, which needs the assumption that both distributions are from an ordinal distribution. This implies that the data cannot contain any ties. Since we have some ties in the data, we will not get the exact p-value. Since our value does not contain a substantial amount of ties, the bias of the p-value will not be extremely high. Because the critical value is already somewhat higher than the suggested Bonferroni value, the hypothesis test will not pass while it should have failed.
+A second non-parametric test we will perform is the Wilcoxon Rank-Sum Test, which needs the assumption that both distributions are from an ordinal distribution. This implies that the data cannot contain any ties. Since we have some ties in the data, we will not get the exact p-value. Since our value does not contain a substantial amount of ties, the bias of the p-value will not be extremely high. Similiar as with the Kolmogorov-Smirnov test, we think that our critical value can handle some bias of the p-values calculated by the Wilcoxon Rank-Sum Test.
 The hypotheses of the Wilcoxon Rank-Sum test can be found in equation \ref{wilcox}:
 \begin{align}
 \label{wilcox}
 \begin{cases}
 H_0: \text{Batch}_0 \text{ and batch}_i \text{ come from the same population} & \quad \text{for } 1 \leq i \leq 7 \\
-H_1: \text{Batch}_0 \text{ and batch}_i \text{ come from a different population} & \quad \text{for } 1 \leq i \leq 7 \\
+H_1: \text{Batch}_0 \text{ and batch}_i \text{ come from a different population} 
 \end{cases}
 \end{align}
 This null hypothesis indicates that the change that the median of $\text{batch}_0$ is larger than the median of $\text{batch}_1$ is the same as that the median of $\text{batch}_0$ is smaller than the median of $\text{batch}_1$. We will reject the null hypothesis if p-value $< 0.01$. 
+\newpage
 \section{Results}
 \subsection{Exploratory data analysis}
 <<echo=FALSE, results='asis'>>=
@@ -240,8 +256,8 @@ xtable(ttest_log_frame, digits=c(0,4))
 @
 \FloatBarrier
 The results indicate that batch three has a mean that is significanlty different from the mean of the unaffected batch, since its p-value is less than $0.01$. This could indicate that this batch is affected.
-\subsubsection{Homogeneity tests}
-Performing the Barlett's tests gives us a p-value of $\Sexpr{as.numeric(unlist(bartlett.test(dataset$OUTCOME~dataset$BATCH))["p.value"])} < 0.01$. This rejects the null hypothesis that all the batches have the same variance. After performing an F-test that compares all the batches with batch 0, we have found the following results:
+\subsubsection{Variance testing}
+Performing the Barlett's tests gives us a p-value of $\Sexpr{as.numeric(unlist(bartlett.test(dataset$OUTCOME~dataset$BATCH))["p.value"])} < 0.05$. This rejects the null hypothesis that all the batches have the same variance. After performing an F-test that compares all the batches with batch 0, we have found the following results:
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 vartestvalues = list()
 for (batch in batches) {
@@ -277,8 +293,6 @@ xtable(as.data.frame(grubbsMax));
 \FloatBarrier
 Both the extreme on the left and the right tail are not significantly big to reject them as an outlier. This indicates that no values can be indicated as errors due mistakes that people maked while measuring the amount of $\mu$g in the batches.
 \subsection{Non-parametric tests}
-\subsubsection{Serial correlation tests with means}
-We have performed a Rank von Neumann Test for lag-1. The p-value is $0.490 < 0.05$ and we therefore cannot reject the null hypothesis. This indicates that no significant pattern can be found. This could indicate that the silicones have affected only one or two batches and not all batches from the point the leakage has started. 
 \subsubsection{Wald-Wolfowitz Runs Test}
 <<echo=FALSE, message=FALSE, warning=FALSE, results="hide">>=
 library(adehabitatLT)
