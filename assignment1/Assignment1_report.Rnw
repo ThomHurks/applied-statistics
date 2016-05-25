@@ -49,7 +49,7 @@ The health inspection has detected a silicone leakage in a machine used in a che
 In the first section we describe which methods we use to find the affected batches. In the next section we will describe what the results of these methods are. Lastly, we will conclude which of the batches are affected. In this section we will also describe what the weaknesses and risks are of our investigation.
 \newpage
 \section{Methods}
-To decide which of the batches are affected, if any, we perform both parametric and non-parametric tests. The parametric tests assume that the data is normally distributed, which means we must test for normality and if necessary transform the data. Non-parametric tests are generally less powerful than parametric tests, but can always be applied regardless of normality. With parametric tests one must be careful to draw conclusions about the original non-transformed data if the data needs to be transformed in order to meet the normality assumption. As a start, we will plot the data and perform a Shapiro-Wilk test to see whether the non-transformed data is normal. After that, we will perform a Wald-Wolfowitz Runs Test which has as a null hypothesis that each element in the sequence is independently drawn from the same random distribution; if this is not the case, that could be an indicator that some of the batches are affected by silicones. We reject the null hypothesis if $p < 0.01$.
+To decide if any of the batches are affected, we perform both parametric and non-parametric tests. The parametric tests assume that the data is normally distributed, which means we must test for normality and if necessary transform the data. Non-parametric tests are generally less powerful than parametric tests, but can always be applied regardless of normality. With parametric tests one must be careful to draw conclusions about the original non-transformed data if the data needs to be transformed in order to meet the normality assumption. As a start, we will plot the data and perform a Shapiro-Wilk test to see whether the non-transformed data is normal. After that, we will perform a Wald-Wolfowitz Runs Test which has as a null hypothesis that each element in the sequence is independently drawn from the same random distribution; if this is not the case, that could be an indicator that some of the batches are affected by silicones. We reject the null hypothesis if $p < 0.01$.
 \subsection{Critical value}
 Most of our hypothesis include multiple comparisons. Because of this reason, we have to adjust the critical value to make sure that it will not reject batches too soon. Applying Bonferroni will give us an $\alpha=\frac{0,05}{7}=0,00714$, but since this value is quite low, it can be the case that too many batches will pass the test. Because we are dealing with dangerous materials, we will raise the alpha value slightly to prevent batches from passing the test even though they could be infected. To be a bit more strict, we will set the critical value to $0.01$.
 \subsection{Normal distribution}
@@ -105,7 +105,7 @@ We can make the first two assumptions based on the assignment description. Altho
 
 Contamination is caused by a leakage, so we expect tainted batches to generally have higher sample values. We perform a one-sided Wilcoxon Signed-Rank Test with the clean batch and each of the potentially tainted batches. 
 \subsection{Outliers}
-We will perform a Grubbs outlier test to check whether there are any indications that one of the measurements has some incorrect value due to for example measurement errors.
+We will perform a Grubbs outlier test on the log-transformed to check whether there are any indications that one of the measurements has some incorrect value due to for example measurement errors.
 \section{Results}
 \subsection{QQ Plot and Shapiro-Wilk}
 The first step is to generate a normal QQ plot for batch 0 as an easy visual confirmation of normality.
@@ -147,7 +147,7 @@ qqline(log(batchB0$OUTCOME))
 \subsection{Skewness and Kurtosis}
 After performing the Shapiro-Wilk test, we have performed skewness and kurtosis tests, to get some insights in what way the transformed data follows normality. In most cases the skewness is a bit too high, while in other cases the kurtosis is not in the range of 
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
-library(e1071)
+library(moments)
 
 batches = unique(dataset$BATCH);
 skewness = list();
@@ -180,7 +180,7 @@ library(xtable)
 xtable(jarque_bera, digits=c(0,4))
 @
 
-We can compute the skewness and kurtosis metrics and observe that for batch 0 they are respectively. This means that although the kurtosis is in the appropriate range to be normally distributed, the skewness of the data is a bit too high. This kind of test is also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is above $0.01$ for all batches, so we cannot reject the normality hypothesis based on skewness and kurtosis. The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the skewness, kurtosis and Jarque-Bera tests seem to suggest a close-to-normal shape. In combination with the fact that for all the other batches we cannot reject the normality null hypothesis, we will assume that batch 0 is normally distributed for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
+  This kind of test is also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is above $0.01$ for all batches, so we cannot reject the normality hypothesis based on skewness and kurtosis. The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the skewness, kurtosis and Jarque-Bera tests seem to suggest a close-to-normal shape. In combination with the fact that for all the other batches we cannot reject the normality null hypothesis, we will assume that batch 0 is normally distributed for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
 \subsubsection{T-Test}
 To see which t-test variant we need to perform, we need to analyse the variance of all the log-transformed batches.
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
@@ -274,14 +274,14 @@ None of the batches violate the null-hypothesis, since all p-values are larger t
 \subsubsection{Wilcoxon Signed-Rank Test}
 
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
-wilcoxB1 = unlist(wilcox.test(batchB0$OUTCOME, batchB1$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB2 = unlist(wilcox.test(batchB0$OUTCOME, batchB2$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB3 = unlist(wilcox.test(batchB0$OUTCOME, batchB3$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB4 = unlist(wilcox.test(batchB0$OUTCOME, batchB4$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB5 = unlist(wilcox.test(batchB0$OUTCOME, batchB5$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB6 = unlist(wilcox.test(batchB0$OUTCOME, batchB6$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB7 = unlist(wilcox.test(batchB0$OUTCOME, batchB7full$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB7m = unlist(wilcox.test(batchB0$OUTCOME, batchB7mean$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
+wilcoxB1 = unlist(wilcox.test(batchB0$OUTCOME, batchB1$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
+wilcoxB2 = unlist(wilcox.test(batchB0$OUTCOME, batchB2$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
+wilcoxB3 = unlist(wilcox.test(batchB0$OUTCOME, batchB3$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
+wilcoxB4 = unlist(wilcox.test(batchB0$OUTCOME, batchB4$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
+wilcoxB5 = unlist(wilcox.test(batchB0$OUTCOME, batchB5$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
+wilcoxB6 = unlist(wilcox.test(batchB0$OUTCOME, batchB6$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
+wilcoxB7 = unlist(wilcox.test(batchB0$OUTCOME, batchB7full$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
+wilcoxB7m = unlist(wilcox.test(batchB0$OUTCOME, batchB7mean$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
 
 wilcox_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B7*"), 
                               "p-value"=c(wilcoxB1, wilcoxB2, wilcoxB3, wilcoxB4, wilcoxB5, wilcoxB6, wilcoxB7, wilcoxB7m))
@@ -289,9 +289,7 @@ wilcox_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B7*
 library(xtable)
 xtable(wilcox_frame, digits=c(0,0,4))
 @
-
-None of the batches are potentially tainted if we perform a Wilcoxon Rank-Sum Test if we take $\alpha =0.01$. 
-
+Since we reject batches if the p-value $< 0.01$, only batch 3 will reject the null hypothesis. The other batches do not show any signs of being affected by the silicones. 
 \subsection{Outliers}
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(outliers)
