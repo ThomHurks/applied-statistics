@@ -7,11 +7,8 @@
 <<echo=FALSE, message=FALSE, results='hide'>>=
 library(sas7bdat)
 dataset = read.sas7bdat("assignment1.sas7bdat")
-library(mice)
-imputed_dataset = complete(mice(dataset), 1)
 dataset = dataset[!is.nan(dataset$OUTCOME),]
 dataset$LOGOUTCOME = log(dataset$OUTCOME)
-imputed_dataset$LOGOUTCOME = log(imputed_dataset$OUTCOME)
 dataset = dataset[!is.nan(dataset$OUTCOME),]
 batchB0 = dataset[dataset$BATCH == "B0",]
 batchB1 = dataset[dataset$BATCH == "B1",]
@@ -21,7 +18,6 @@ batchB4 = dataset[dataset$BATCH == "B4",]
 batchB5 = dataset[dataset$BATCH == "B5",]
 batchB6 = dataset[dataset$BATCH == "B6",]
 batchB7 = dataset[dataset$BATCH == "B7",]
-batchB7_imputed = imputed_dataset[imputed_dataset$BATCH == "B7",]
 
 all_batches = unique(dataset$BATCH)
 batches = all_batches[all_batches != "B0"]
@@ -137,6 +133,7 @@ library(xtable)
 xtable(metrics_frame)
 @
 \FloatBarrier
+We also discovered that batch seven has a missing value ("NA"). The statistical tests that we plan to do, do not require that the number of data points between batches is the same, and since there is only a single missing value in the whole dataset, we can simply remove the missing value.
 \subsection{QQ Plot and Shapiro-Wilk}
 The first step is to generate a normal QQ plot for batch 0 as an easy visual confirmation of normality.
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
@@ -298,9 +295,8 @@ ksB4 =  unlist(ks.test(batchB0$OUTCOME, batchB4$OUTCOME,         exact=TRUE)["p.
 ksB5 =  unlist(ks.test(batchB0$OUTCOME, batchB5$OUTCOME,         exact=TRUE)["p.value"])
 ksB6 =  unlist(ks.test(batchB0$OUTCOME, batchB6$OUTCOME,         exact=TRUE)["p.value"])
 ksB7 =  unlist(ks.test(batchB0$OUTCOME, batchB7$OUTCOME,         exact=TRUE)["p.value"])
-ksB7m = unlist(ks.test(batchB0$OUTCOME, batchB7_imputed$OUTCOME, exact=TRUE)["p.value"])
-ks_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B7*"), 
-                              "p-value"=c(ksB1, ksB2, ksB3, ksB4, ksB5, ksB6, ksB7, ksB7m))
+ks_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7"), 
+                              "p-value"=c(ksB1, ksB2, ksB3, ksB4, ksB5, ksB6, ksB7))
 
 library(xtable)
 xtable(ks_frame, digits=c(0,0,4))
@@ -324,12 +320,10 @@ wilcoxB6 = unlist(wilcox.test(batchB0$OUTCOME, batchB6$OUTCOME,
                               paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
 wilcoxB7 = unlist(wilcox.test(batchB0$OUTCOME, batchB7$OUTCOME,
                               paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB7m = unlist(wilcox.test(batchB0$OUTCOME, batchB7_imputed$OUTCOME,
-                              paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
 
-wilcox_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B7*"), 
-                              "p-value"=c(wilcoxB1, wilcoxB2, wilcoxB3, wilcoxB4, wilcoxB5, wilcoxB6, wilcoxB7,
-                                          wilcoxB7m))
+wilcox_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7"), 
+                          "p-value"=c(wilcoxB1, wilcoxB2, wilcoxB3, wilcoxB4, wilcoxB5, wilcoxB6,
+                                      wilcoxB7))
 
 library(xtable)
 xtable(wilcox_frame, digits=c(0,0,4))
