@@ -189,11 +189,7 @@ variance_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6"
                               "variance"=c(var(log(batchB0$OUTCOME)), var(log(batchB1$OUTCOME)), var(log(batchB2$OUTCOME)), var(log(batchB3$OUTCOME)),
                                            var(log(batchB4$OUTCOME)), var(log(batchB5$OUTCOME)), var(log(batchB6$OUTCOME)), var_log_B7))
 library(xtable)
-<<<<<<< HEAD
-xtable(variance_log_frame,digits=c(0,3,3))
-=======
 xtable(variance_log_frame, digits=c(0,0,4))
->>>>>>> origin/master
 @
 The variance differs between batches, as can be seen in the preceding table. Because of that, we will perform a t-test that assumes unequal variances.Batch seven has one missing value, which should not be a problem for a t-test.\\
 The results of the t-tests can be found in the following table:
