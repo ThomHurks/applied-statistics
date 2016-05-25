@@ -203,10 +203,7 @@ jarque_frame = data.frame("Jarque-Bera"= unlist(batches_jarque))
 library(xtable)
 xtable(jarque_frame, digits=c(0,4))
 @
-<<<<<<< Updated upstream
-  This kind of test is also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is above $0.01$ for all batches, so we cannot reject the normality hypothesis based on skewness and kurtosis. The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the skewness, kurtosis and Jarque-Bera tests seem to suggest a close-to-normal shape. In combination with the fact that for all the other batches we cannot reject the normality null hypothesis, we will assume that batch 0 is normally distributed for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
-=======
->>>>>>> Stashed changes
+Kurtosis and skewness tests are also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is above $0.01$ for all batches, so we cannot reject the normality hypothesis based on skewness and kurtosis. Both the Shapiro-Wilk test and Jarque-Bera indicate that assuming normality on the batches is not rejected and therefore we will assume an underlying normal distribution for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
 \subsubsection{T-Test}
 As can be found in the table above containing the variance of the batches, we can see that the variances of the batches are not equal. We therefore have to perform a t-test that assumes unequal variances. Batch seven has one missing value, which should not be a problem for a t-test.\\
 The results of the t-tests can be found in the following table:
@@ -233,7 +230,7 @@ library(xtable)
 xtable(var_log_frame,digits=c(0,3))
 @
 These results indicate that batch four has different properties than the other batches.
-\subsection{Outliers}
+\subsubsection{Outliers}
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(outliers)
 grubbsMin = list(`min`=c(),`p-value`=c());
@@ -312,30 +309,5 @@ library(xtable)
 xtable(wilcox_frame, digits=c(0,0,4))
 @
 We can observe that the p-value for batch 3 $= \Sexpr{wilcoxB3} < 0.01$ and so for batch 3 we reject the null hypothesis. The other batches do not deviate significantly from batch zero.
-<<<<<<< Updated upstream
-\subsection{Outliers}
-<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
-library(outliers)
-grubbsMin = list(`min`=c(),`p-value`=c());
-grubbsMax = list(`max`=c(),`p-value`=c());
-for(batch in batches) {
-  Bi = dataset[dataset$BATCH == batch,]$OUTCOME;
-  logBi = dataset[dataset$BATCH == batch,]$LOGOUTCOME;
-  grubbsMin$min[batch] = min(Bi);
-  grubbsMax$max[batch] = max(Bi);
-  grubbsMin$`p-value`[batch] = grubbs.test(logBi, type=10, opposite=TRUE)$p.value;
-  grubbsMax$`p-value`[batch] = grubbs.test(logBi, type=10)$p.value;
-}
-@
-<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
-library(xtable);
-xtable(as.data.frame(grubbsMin));
-@
-<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
-library(xtable);
-xtable(as.data.frame(grubbsMax));
-@
-=======
->>>>>>> Stashed changes
 \section{Conclusion}
 \end{document}
