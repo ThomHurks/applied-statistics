@@ -87,7 +87,7 @@ H_0: \sigma_0 = \sigma_1 = \sigma_2 ... = \sigma_7  \\
 H_1: \sigma_0 \neq \sigma_1 \neq \sigma_2 ... \neq \sigma_7
 \end{cases}
 \end{align}
-We will reject the null hypothesis if p-value $< 0.05$. Besides Barlett's test we will perform an F-test to see which batches have similar properties as batch 0. This can be formulated as can be found in equation \ref{ftest}:
+We will reject the null hypothesis if p-value $< 0.05$. Besides Barlett's test we will perform an F-test to see which batches have similar variance as batch 0. This can be formulated as can be found in equation \ref{ftest}:
 \begin{align}
 \label{ftest}
 \begin{cases}
