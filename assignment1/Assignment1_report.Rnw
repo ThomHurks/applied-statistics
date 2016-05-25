@@ -84,9 +84,6 @@ If the result of the t-test is less than $0.01$, we will reject the null hypothe
 Besides performing a t-test, we will also perform some homogeneity tests to see whether the data also share the same characteristics. To check if this is the case, we will perform a Barlett's test, which checks whether all the variances of the batches are equal to each other. The null hypothesis of that test is that all variances are equal, and thus that the sets are homogeneous. Besided that we will perform an F-test to see which batches have similar properties as batch 0.
 \subsubsection{Outliers}
 We will perform a Grubbs outlier test on the log-transformed to check whether there are any indications that one of the measurements has some incorrect value due to for example measurement errors. We will do this for both outliers on the left and right tail. Our null hypothesis is can be found in equation \ref{outlier}.
-<<<<<<< Updated upstream
-We will reject the null hypothesis if the p-value $< 0.01$.
-=======
 \begin{align}
 \label{outlier}
 \begin{cases}
@@ -95,7 +92,6 @@ H_1: \text{Batch}_i \text{ contains outliers} \quad \text{for } 1 \leq i \leq 7 
 \end{cases}
 \end{align}
 We will reject the null hypothesis if the p-value$<0.01$.
->>>>>>> Stashed changes
 \subsection{Non-parametric tests}
 \subsubsection{Serial correlation test on the means}
 We will perform a serial correlation test on the means of the batches. The serial correlation test is Von Neumann with lag-1 autocorrelation. The null hypothesis is that the means of the batches are random. If this indeed is the case, this is an indication that none of the batches is affected by the silicones. We will reject the null hypothesis if $p<0.05$.
@@ -186,11 +182,7 @@ jarque_frame = data.frame("Jarque-Bera"= unlist(batches_jarque))
 library(xtable)
 xtable(jarque_frame, digits=c(0,4))
 @
-<<<<<<< Updated upstream
   This kind of test is also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is above $0.01$ for all batches, so we cannot reject the normality hypothesis based on skewness and kurtosis. The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the skewness, kurtosis and Jarque-Bera tests seem to suggest a close-to-normal shape. In combination with the fact that for all the other batches we cannot reject the normality null hypothesis, we will assume that batch 0 is normally distributed for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
-=======
-This kind of test is also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is above $0.01$ for all batches, so we cannot reject the normality hypothesis based on skewness and kurtosis. The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the skewness, kurtosis and Jarque-Bera tests seem to suggest a close-to-normal shape. In combination with the fact that for all the other batches we cannot reject the normality null hypothesis, we will assume that batch 0 is normally distributed for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
->>>>>>> Stashed changes
 \subsubsection{T-Test}
 To see which t-test variant we need to perform, we need to analyse the variance of all the log-transformed batches.
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
@@ -283,7 +275,6 @@ wilcox_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B7*
 library(xtable)
 xtable(wilcox_frame, digits=c(0,0,4))
 @
-<<<<<<< Updated upstream
 We can observe that the p-value for batch 3 $= \Sexpr{wilcoxB3} < 0.01$ and so for batch 3 we reject the null hypothesis. The other batches do not deviate significantly from batch zero.
 \subsection{Outliers}
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
@@ -307,9 +298,5 @@ xtable(as.data.frame(grubbsMin));
 library(xtable);
 xtable(as.data.frame(grubbsMax));
 @
-
-=======
-Since we reject batches if the p-value $< 0.01$, we have to reject the null hypothesis for batch 3. The other batches do not deviate much from batch zero. 
->>>>>>> Stashed changes
 \section{Conclusion}
 \end{document}
