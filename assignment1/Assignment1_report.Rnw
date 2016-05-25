@@ -87,19 +87,7 @@ H_1: \mu_0 < \mu_i
 \end{align}
 If the result of the t-test is less than $0.01$, we will reject the null hypothesis.
 \subsubsection{Variance testing}
-<<<<<<< HEAD
 Besides performing a t-test, we will also perform some homogeneity tests to see whether the data also share the same characteristics. W will perform an F-test to see which batches have a variance similiar to batch 0. This can be formulated as can be found in equation \ref{ftest}:
-=======
-Besides performing a t-test, we will also perform some homogeneity tests to see whether the data also share the same characteristics. To check if this is the case, we will perform a Barlett's test, which checks whether all the variances of the batches are equal to each other. This can be formulated as can be found in \ref{barlet}:
-\begin{align}
-\label{barlet}
-\begin{cases}
-H_0: \sigma_0 = \sigma_1 = \sigma_2 ... = \sigma_7  \\
-H_1: \sigma_0 \neq \sigma_1 \neq \sigma_2 ... \neq \sigma_7
-\end{cases}
-\end{align}
-We will reject the null hypothesis if p-value $< 0.05$. Besides Barlett's test we will perform an F-test to see which batches have similar variance as batch 0. This can be formulated as can be found in equation \ref{ftest}:
->>>>>>> origin/master
 \begin{align}
 \label{ftest}
 \begin{cases}
