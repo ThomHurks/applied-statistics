@@ -336,7 +336,7 @@ library(xtable)
 xtable(wilcox_frame, digits=c(0,0,4))
 @
 \FloatBarrier
-We can observe that the p-value for batch three $= \Sexpr{wilcoxB3} < 0.01$ and so for batch three we reject the null hypothesis. The other batches do not deviate significantly from batch zero.
+We can observe that the p-value for batch three $= \Sexpr{wilcoxB3} < 0.01$ and so for batch three we reject the null hypothesis that the population mean ranks are similar. The other batches do not deviate significantly from batch zero.
 \newpage
 \section{Conclusion}
 If we consider the results, we see that batch three fails both the two-sided t-test and the Wilcoxon Rank-Sum Test. Batch three also reports a low p-value on the Kolmogorov-Smirnov test. We have hypothesized that we expect some kind of location shift of the distribution towards a higher outcome. Both the Wilcoxon Rank-Sum Test and t-test are tests that investigate whether such a shift has taken place, and by rejecting the null hypothesis they indicate that batch three indeed has shifted towards a higher amount of silicones in its batch. The Kolmogorov-Smirnov test can also be used to detect location-shifts between distributions, so a low p-value for batch three on that test may also be indicative. Because of these reasons, we advise not to allow batch three to be sold, since we strongly suspect that batch three is affected by the silicones.\\\\
