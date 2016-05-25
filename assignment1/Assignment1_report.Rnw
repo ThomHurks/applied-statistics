@@ -272,7 +272,7 @@ wilcox_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B7*
 library(xtable)
 xtable(wilcox_frame, digits=c(0,0,4))
 @
-Since we reject batches if the p-value $< 0.01$, only batch 3 fails to pass the null hypothesis. The other batches do not deviate much from batch zero. 
+We can observe that the p-value for batch 3 $= \Sexpr{wilcoxB3} < 0.01$ and so for batch 3 we reject the null hypothesis. The other batches do not deviate significantly from batch zero.
 \subsection{Outliers}
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(outliers)
