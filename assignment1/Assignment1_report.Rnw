@@ -66,7 +66,7 @@ If, however, the data is not normally distributed, we will apply a transformatio
 \begin{align}
 \label{means}
 \begin{cases}
-H_0: \mu_0 \leq \mu_i & \quad \text{for } 1 \leq i \leq 7 \\
+H_0: \mu_0 \geq \mu_i & \quad \text{for } 1 \leq i \leq 7 \\
 H_1: \mu_0 < \mu_i & \quad \text{for } 1 \leq i \leq 7
 \end{cases}
 \end{align}
@@ -84,7 +84,7 @@ If the non-transformed data does not follow a normal distribution, we will also 
 Since the results of the samples do not depend on each other, the first assumption can be made. Second, the outcomes are all numerical so the second assumption can be made too. We perform a two-sided test to get a general view of whether non-parametric testing picks up on any differiations between the distributions of batch 0 and the other batches. Our hypothesis is the following:
 \begin{align}
 \begin{cases}
-H_0: F_0 \leq F_i & \quad \text{for } 1 \leq i \leq 7 \\
+H_0: F_0 = F_i & \quad \text{for } 1 \leq i \leq 7 \\
 H_1: F_0 \neq F_i & \quad \text{for } 1 \leq i \leq 7
 \end{cases}
 \end{align}
@@ -290,7 +290,7 @@ library(xtable)
 xtable(wilcox_frame, digits=c(0,0,4))
 @
 
-B2, B3 and B7, test as potentially tainted if we take $\alpha =0.025$. That is, it is unlikely that the higher sample values from these batches are due to sample bias. Applying relaxed Bonferroni correction ($p<0.0045$), however, results in the null hypthesis holding for all potentially tainted batches+ yet again. 
+None of the batches are potentially tainted if we perform a Wilcoxon Rank-Sum Test if we take $\alpha =0.01$. 
 
 \section{Conclusion}
 \end{document}

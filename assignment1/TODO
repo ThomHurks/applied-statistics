@@ -1,14 +1,16 @@
 TODO:
 
-critical value, doesn't a lower value mean less chance to reject the null hypothesis
+critical value, doesn't a lower value mean less chance to reject the null hypothesis -> Ja, waar doel je op?
 
 add explanation why the skewness and kurtosis should be between the values that are mentioned (why these values?)
 
-equation with label "means" heeft H0: less or equal and H1: less than, shouldn't H1 be greater than?
+equation with label "means" heeft H0: less or equal and H1: less than, shouldn't H1 be greater than? -> volgens mij andersom. De mean is prima als ie gelijk of kleiner is, maar als ie significant groter is dan moet ie falen. Heb het aangepast.
 
-for the equation in section "Kolmogorov-Smirnov Test" shouldn't H1 be greater than?
+for the equation in section "Kolmogorov-Smirnov Test" shouldn't H1 be greater than? Volgens mij moet F_0 = F_i (aka distributie is hetzelfde). Is aangepast.
 
-Wilcoxon Rank-Sum Test section should be adapted (has comment: A  WILCOXON  SIGNED  RANK  TEST  IS  UITGEVOERD  EN  NIET  EENWILCOXON RANK SUM TEST DUS DAT MOET VERANDERD WORDEN.HIER MOET OOK EEN NULL HYPOTHESE VOOR GEMAAKT WORDEN.VERANDEREN DUS!)
+Wilcoxon Rank-Sum Test section should be adapted (has comment: A  WILCOXON  SIGNED  RANK  TEST  IS  UITGEVOERD  EN  NIET  EENWILCOXON RANK SUM TEST DUS DAT MOET VERANDERD WORDEN.HIER MOET OOK EEN NULL HYPOTHESE VOOR GEMAAKT WORDEN.VERANDEREN DUS!). Moet nog awt uitgebreid worden.
+
+Wilcoxon Rank-Sum Test -> onze data is volgens mij niet gepaard, want persoon x wordt niet twee keer getest. De waardes zijn in feite onafhankelijk. Even uitzoeken, maar denk dat dit aangepast moet worden.
 
 "grubs outlier test" section should be written
 
