@@ -49,11 +49,12 @@ The health inspection has detected a silicone leakage in a machine used in a che
 In the first section we describe which methods we use to find the affected batches. In the next section we will describe what the results of these methods are. Lastly, we will conclude which of the batches are affected. In this section we will also describe what the weaknesses and risks are of our investigation.
 \subsection{Reproducible Research}
 We value the idea of reproducible research, which is publishing data analyses together with the software code, so others can reproduce and verify our findings and possibly extend our research. For this reason this report has been created using Knitr, which is a dynamic report generation tool for the statistical programming language R. The Knitr sourcecode for this report is available from the authors if others are interested in verifying our results.
+
 \newpage
 \section{Methods}
-To decide if any of the batches are affected, we perform both parametric and non-parametric tests. The parametric tests assume that the data is normally distributed, which means we must test for normality and if necessary transform the data. Non-parametric tests are generally less powerful than parametric tests, but can always be applied regardless of normality. With parametric tests one must be careful to draw conclusions about the original non-transformed data if the data needs to be transformed in order to meet the normality assumption. 
+To decide if any of the batches are affected, we perform both parametric and non-parametric tests. The parametric tests assume that the data is normally distributed, which means we must test for normality and, if necessary, transform the data. Non-parametric tests are generally less powerful than parametric tests, but can be applied regardless of the measure of normality. With parametric tests one must be careful to draw conclusions about the original non-transformed data if the data needs to be transformed in order to meet the normality assumption. 
 \subsection{Exploratory data analysis}
-Before performing any parametric or non-parametric tests, we will first perform some standard statistical tests to gain some insight into the data. As a start, we will plot the data and calculate the mean, standard deviation, variance and median of each batch. After that, we will perform a Shapiro-Wilk test to see whether the non-transformed data is normal. We have formulated the null hypothesis as can be found in equation\ref{normal}:
+Before performing any parametric or non-parametric tests, we will first perform some standard statistical tests to gain some insight into the data. As a start, we will plot the data and calculate the mean, standard deviation, variance and median of each batch. Additionally, we will perform a Shapiro-Wilk test to see whether the non-transformed data is normal. We have formulated the null hypothesis as can be found in equation\ref{normal}:
 \begin{align}
 \label{normal}
 \begin{cases}
@@ -64,14 +65,22 @@ H_1: B_i\nsim \mathcal{N}  \\
 We will reject the null hypothesis if the p-value $< 0.01$.
 After that, we will perform a Wald-Wolfowitz Runs Test which has as a null hypothesis that each element in the sequence is independently drawn from the same random distribution which is expected if none of the batches are affected by silicones. We reject the null hypothesis if $p < 0.01$.
 \subsection{Critical value}
-Most of our hypotheses include testing all seven possibly affected batches. Because of this reason, we have to adjust the commonly used critical value of $0.05$ to make sure we do not reject the null hypothesis due to chance. Applying Bonferroni will give us a critical value of $\alpha=\frac{0,05}{7}=0,00714$, but since this value is quite low we may fail to reject the null hypotheses in cases where we actually want to; our goal is to identify the affected batches, so we can be a bit more strict and raise the alpha value slightly. As such, we will set the critical value to $0.01$.\\\\
-For some tests, all the data at once will be investigated. At this point, we will not use a criticial value of $0.01$, but keep the critical value of $\alpha=0.05$. 
+Most of our hypotheses include testing all seven possibly affected batches. Because of this reason, we have to adjust the commonly used critical value of $0.05$ to make sure we do not reject the null hypothesis due to chance. Applying Bonferroni correction gives us a critical value of $\alpha=\frac{0,05}{7}=0,00714$, but since Bonferroni correction is quite conservative we may fail to reject the null hypotheses in cases where we actually want to do so; our goal is to identify the affected batches, so we can be a bit more flexible and raise the alpha value slightly. As such, we will set the critical value to $0.01$.\\\\
+For some tests, all the data will be investigated at once. At this point, we will not use a criticial value of $0.01$, but keep the critical value of $\alpha=0.05$. 
 \subsection{Normal distribution}
 \subsubsection{Investigating normality on transformed data}
 We will perform a log-normal transformation on the data to modify the data such that the form of the data will shape towards a normal distribution. To check whether this helped, we will plot the transformed data and perform a Shapiro-Wilk test on each of the batches, which can be found in equation \ref{normal}. We will reject the null hypothesis if the p-value $<0.01$.
-Besides a Shapiro-Wilk test, we will perform skwewness and kurtosis tests to test on where normality is violated. The critical value of a two-sided skewness test is 1,157, while the critical value of the kurtosis is 1,49. We will perform a Jarque-Bera test to see if it is appropriate to reject a normal distribution based on skewness and kurtosis. The null hypothesis is the same as with the Shapiro-Wilk test, which can be found in equation \ref{normal}. We will reject normality if the p-value $< 0.01$.
+Besides a Shapiro-Wilk test, we will perform skwewness and kurtosis tests to determine where normality is violated. The critical value of a two-sided skewness test is 1.157, while the critical value of the kurtosis is 1.49. We will perform a Jarque-Bera test to see if it is appropriate to reject a normal distribution based on skewness and kurtosis. The null hypothesis is the same as with the Shapiro-Wilk test, which can be found in equation \ref{normal}. We will reject normality if the p-value $< 0.01$.
 \subsubsection{T-test}
-Because batch 0 is produced before the previous inspection where no leakage was discovered, we know that the mean and variance of the amount of silicones found in each batch should be similar to the amount of silicone in batch 0. To check whether they are similar, we will perform a one-sided t-test, because a leakage will cause the outcome to become higher, while it would be acceptable if the average amount of silicones in a batch is lower than in batch 0. Therefore the hypothesis is the following:
+Because batch 0 is produced before the previous inspection where no leakage was discovered, we know that the distribution of the amount of silicones found in each batch should be similar to the amount of silicone in batch 0. To check whether they are similar, we will perform a one-sided t-test. We have chosen a one-sided test, since a leakage in silicones will cause the amount to be higher in the batches and thus we have to test only if the test is violated on one side. To perform a proper t-test, we have to know if the variances of the batches are equal. We check this by applying Barlett's test, which checks whether all the variances of the batches are equal to each other. This can be formulated as can be found in \ref{barlet}:
+\begin{align}
+\label{barlet}
+\begin{cases}
+H_0: \sigma_0 = \sigma_1 = \sigma_2 ... = \sigma_7  \\
+H_1: \sigma_0 \neq \sigma_1 \neq \sigma_2 ... \neq \sigma_7
+\end{cases}
+\end{align}
+We will reject the null hypothesis if p-value $< 0.05$. Based on these results, we will apply either a equal or unequal t-test. The hypothesis of the t-test is the following:
 \begin{align}
 \label{means}
 \begin{cases}
@@ -81,15 +90,7 @@ H_1: \mu_0 < \mu_i
 \end{align}
 If the result of the t-test is less than $0.01$, we will reject the null hypothesis.
 \subsubsection{Variance testing}
-Besides performing a t-test, we will also perform some homogeneity tests to see whether the data also share the same characteristics. To check if this is the case, we will perform a Barlett's test, which checks whether all the variances of the batches are equal to each other. This can be formulated as can be found in \ref{barlet}:
-\begin{align}
-\label{barlet}
-\begin{cases}
-H_0: \sigma_0 = \sigma_1 = \sigma_2 ... = \sigma_7  \\
-H_1: \sigma_0 \neq \sigma_1 \neq \sigma_2 ... \neq \sigma_7
-\end{cases}
-\end{align}
-We will reject the null hypothesis if p-value $< 0.05$. Besides Barlett's test we will perform an F-test to see which batches have similar variance as batch 0. This can be formulated as can be found in equation \ref{ftest}:
+Besides performing a t-test, we will also perform some homogeneity tests to see whether the data also share the same characteristics. We will perform an F-test to see which batches have a variance similiar to batch 0. This can be formulated as can be found in equation \ref{ftest}:
 \begin{align}
 \label{ftest}
 \begin{cases}
@@ -99,7 +100,7 @@ H_1: \sigma_0 \neq \sigma_i
 \end{align}
 We will reject the null hypothesis if the p-value $<0.01$.
 \subsubsection{Outliers}
-We will perform a Grubbs outlier test on the log-transformed to check whether there are any indications that one of the measurements has some incorrect value due to for example measurement errors. We will do this for both outliers on the left and right tail. Our null hypothesis is can be found in equation \ref{outlier}.We will reject the null hypothesis if the p-value $< 0.01$.
+We will perform a Grubbs outlier test on the log-transformed to check whether there are any indications that one of the measurements has some incorrect value due to measurement errors, for example. We will do this for both outliers on the left and right tail. Our null hypothesis is can be found in equation \ref{outlier}.We will reject the null hypothesis if the p-value $< 0.01$.
 \begin{align}
 \label{outlier}
 \begin{cases}
@@ -115,10 +116,10 @@ If the non-transformed data does not follow a normal distribution, we will also 
   \item The two samples are independent.
   \item The outcomes are ordinal or numerical.
 \end{itemize}
-Since the results of the samples do not depend on each other, the first assumption can be made. Second, the outcomes are all numerical so the second assumption can be made too. We perform a two-sided test to get a general view of whether non-parametric testing picks up on any differiations between the distributions of batch 0 and the other batches. Our hypothesis is the following:
-We will reject the null hypothesis when $p < 0.01$. Because batch 7 has a missing value, we have decided to impute the mean of batch 7 into the line with the missing value, to see whether this affects the test. The Kolmogorov-Smirnov test will not give the exact p-value due ties in the data, so it could be the case that the p-value retrieved from the test somewhat deviates from the real p-value. Because we have picked a somewhat high critical value, some bias of p-values can be handled.
+Since the results of the samples do not depend on each other, the first assumption can be made. Second, the outcomes are all numerical so the second assumption can be made too. We perform a two-sided test to get a general view of whether non-parametric testing picks up on any differences between the distributions of batch 0 and the other batches. Our hypothesis is the following:
+We will reject the null hypothesis when $p < 0.01$. Because batch 7 has a missing value, we have decided to impute the mean of batch 7 into the line with the missing value, to see whether this affects the test. The Kolmogorov-Smirnov test will not give the exact p-value due to ties in the data, so it could be the case that the p-value retrieved from the test somewhat deviates from the real p-value. Because we have picked a somewhat high critical value, some bias of p-values can be handled.
 \subsubsection{Wilcoxon Rank-Sum Test}
-A second non-parametric test we will perform is the Wilcoxon Rank-Sum Test, which needs the assumption that both distributions are from an ordinal distribution. This implies that the data cannot contain any ties. Since we have some ties in the data, we will not get the exact p-value. Since our value does not contain a substantial amount of ties, the bias of the p-value will not be extremely high. Similiar as with the Kolmogorov-Smirnov test, we think that our critical value can handle some bias of the p-values calculated by the Wilcoxon Rank-Sum Test.
+A second non-parametric test we will perform is the Wilcoxon Rank-Sum Test, which needs the additional assumption that both distributions are from an ordinal distribution. This implies that the data cannot contain any ties. Since we have some ties in the data, we will not get the exact p-value. Since our value does not contain a substantial amount of ties, the bias of the p-value will not be extremely high. As with the Kolmogorov-Smirnov test, we think that our critical value can handle some bias of the p-values calculated by the Wilcoxon Rank-Sum Test.
 The hypotheses of the Wilcoxon Rank-Sum test can be found in equation \ref{wilcox}:
 \begin{align}
 \label{wilcox}
@@ -131,6 +132,7 @@ This null hypothesis indicates that the change that the median of $\text{batch}_
 \newpage
 \section{Results}
 \subsection{Exploratory data analysis}
+The results of the standard data analysis can be found in the table below.
 <<echo=FALSE, results='asis'>>=
 means = list()
 variances = list()
@@ -151,18 +153,8 @@ library(xtable)
 xtable(metrics_frame)
 @
 \FloatBarrier
-We also discovered that batch seven has a missing value ("NA"). The statistical tests that we plan to do, do not require that the number of data points between batches is the same, and since there is only a single missing value in the whole dataset, we can simply remove the missing value.
-\subsection{QQ Plot and Shapiro-Wilk}
-The first step is to generate a normal QQ plot for batch 0 as an easy visual confirmation of normality.
-<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
-variance_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"), 
-                                "variance"=c(var(batchB0$LOGOUTCOME), var(batchB1$LOGOUTCOME),
-                                             var(batchB2$LOGOUTCOME), var(batchB3$LOGOUTCOME),
-                                             var(batchB4$LOGOUTCOME), var(batchB5$LOGOUTCOME),
-                                             var(batchB6$LOGOUTCOME), var(batchB7$LOGOUTCOME)))
-library(xtable)
-xtable(variance_log_frame, digits=c(0,0,4))
-@
+We also discovered that batch seven has a missing value ("NA"). Some of the statistical tests that we plan to perform do not require that the number of data points between batches is the same, and since there is only a single missing value in the whole dataset, we can simply remove the missing value in those cases. In other cases the missing value will be replaced by the mean of the other sample values in batch 7. 
+The next step is to generate a normal QQ plot for batch 0 as an easy visual confirmation of normality.
 <<figure1, fig.cap="QQ Plot of batch 0", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
 qqnorm(batchB0$OUTCOME)
 qqline(batchB0$OUTCOME)
@@ -242,9 +234,9 @@ library(xtable)
 xtable(jarque_frame, digits=c(0,4))
 @
 \FloatBarrier
-Kurtosis and skewness tests are also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is above $0.01$ for all batches, so we cannot reject the normality hypothesis based on skewness and kurtosis. Both the Shapiro-Wilk test and Jarque-Bera indicate that assuming normality on the batches is not rejected and therefore we will assume an underlying normal distribution for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
+Kurtosis and skewness tests are also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is above $0.01$ for all batches, so we cannot reject the normality hypothesis based on skewness and kurtosis. Both the Shapiro-Wilk test and Jarque-Bera indicate that assuming normality on the batches is not rejected and therefore we will assume an underlying normal distribution for the subsequent tests in this section. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
 \subsubsection{T-Test}
-As can be found in the table above containing the variance of the batches, we can see that the variances of the batches are not equal. We therefore have to perform a t-test that assumes unequal variances. Batch seven has one missing value, which should not be a problem for a t-test.\\
+Performing the Barlett's tests gives us a p-value of $\Sexpr{as.numeric(unlist(bartlett.test(log(dataset$OUTCOME)~dataset$BATCH))["p.value"])} < 0.05$. This rejects the null hypothesis that all the batches have equal variance. This implies that we have to perform a t-test that assumes unequal variances. Batch seven has one missing value, which should not be a problem for a t-test.\\
 The results of the t-tests can be found in the following table:
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 ttests_batches = list()
@@ -259,7 +251,7 @@ xtable(ttest_log_frame, digits=c(0,4))
 \FloatBarrier
 The results indicate that batch three has a mean that is significanlty different from the mean of the unaffected batch, since its p-value is less than $0.01$. This could indicate that this batch is affected.
 \subsubsection{Variance testing}
-Performing the Barlett's tests gives us a p-value of $\Sexpr{as.numeric(unlist(bartlett.test(dataset$OUTCOME~dataset$BATCH))["p.value"])} < 0.05$. This rejects the null hypothesis that all the batches have the same variance. After performing an F-test that compares all the batches with batch 0, we have found the following results:
+After performing an F-test that compares all the batches with batch 0, we have found the following results:
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 vartestvalues = list()
 for (batch in batches) {
@@ -270,7 +262,7 @@ library(xtable)
 xtable(var_log_frame,digits=c(0,3))
 @
 \FloatBarrier
-These results indicate that batch four has different properties than the other batches.
+These results indicate that batch four has different properties when compared to the other batches.
 \subsubsection{Outliers}
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(outliers)
@@ -346,10 +338,11 @@ xtable(wilcox_frame, digits=c(0,0,4))
 @
 \FloatBarrier
 We can observe that the p-value for batch 3 $= \Sexpr{wilcoxB3} < 0.01$ and so for batch 3 we reject the null hypothesis. The other batches do not deviate significantly from batch zero.
+\newpage
 \section{Conclusion}
-If we consider the results, we see that batch three fails both the two-sided t-test and the Wilcoxon Rank-Sum Test. We have hypothesized that we expect some kind of location shift of the distribution towards a higher outcome. Both the Wilcoxon Rank-Sum Test and t-test are tests that investigate whether such a shift has taken place and by rejecting the null hypothesis they indicate that batch three indeed has shifted towards a higher amount of silicones in its batch. Because of this reason, we advice you to not sell batch three, since we highly expect that batch three is affected by the silicones.\\\\
-Batch two and batch seven are also highly suspicious. Both batches pass the Wilcoxon Rank-Sum Test and t-test with a p-value very close to the critical value. It could be wise to do some further investigation on these two batches to get some more insight if the batches are contaminated.\\\\
-If we consider the other tests, we see that batch four does not pass the homogeneity tests. This implies that the data from batch three has a different variance than batch 0. This is indeed the case, since the variance of batch three is quite low. As the only batch of the only batches it does not have a relatively high value that significantly stretches the variance. Because we only have very little data of each batch, it is probably the case that this high values are not randomly selected when gathering the data of the batches. Because batch four easily passes both the t-test and the Wilcoxon Rank-Sum Test we do not have any concerns that batch four is affected by silicones.\\\\
+If we consider the results, we see that batch three fails both the two-sided t-test and the Wilcoxon Rank-Sum Test. We have hypothesized that we expect some kind of location shift of the distribution towards a higher outcome. Both the Wilcoxon Rank-Sum Test and t-test are tests that investigate whether such a shift has taken place, and by rejecting the null hypothesis they indicate that batch three indeed has shifted towards a higher amount of silicones in its batch. Because of this reason, we advise you to not sell batch three, since we strongly suspect that batch three is affected by the silicones.\\\\
+Batch two and batch seven are also highly suspicious. Both batches pass the Wilcoxon Rank-Sum Test and t-test with a p-value very close to the critical value. It would be wise to do some further investigation on these two batches to get some more insight into whether the batches are contaminated.\\\\
+If we consider the other tests, we see that batch four does not pass the homogeneity tests. This implies that the data from batch three has a different variance than batch 0. This is indeed the case, since the variance of batch three is quite low. As the only batch of the potentially tainted batches it does not have a relatively high value that significantly stretches the variance. Because we only have very little data of each batch, it is probably the case that these high values are not randomly selected when gathering the data of the batches. Because batch four easily passes both the t-test and the Wilcoxon Rank-Sum Test we do not have any concerns that batch four is affected by silicones.\\\\
 Since all the rest of the batches pass all the tests that could indicate an affection of silicons, we see no reason to state that batch one, two, four, five, six and seven are affected. Those batches should be suitable for sell.
 
 \subsection{Weaknesses of our approach}
