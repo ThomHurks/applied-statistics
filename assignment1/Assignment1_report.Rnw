@@ -90,9 +90,7 @@ H_1: F_0 \neq F_i & \quad \text{for } 1 \leq i \leq 7
 \end{align}
 We will reject the null hypothesis when $p < 0,01$. Because batch 7 has a missing value, we have decided to impute the mean of batch 7 into the line with the missing value, to see whether this affects the test.
 \subsubsection{Wilcoxon Rank-Sum Test}
-A WILCOXON SIGNED RANK TEST IS UITGEVOERD EN NIET EEN WILCOXON RANK SUM TEST DUS DAT MOET VERANDERD WORDEN. HIER MOET OOK EEN NULL HYPOTHESE VOOR GEMAAKT WORDEN. VERANDEREN DUS!
-To compare w
-Another test to compare the clean batch with the other batches without any assumption of normality is the Wilcoxon Signed-Rank Test. To apply this test, the following assumptions are made:
+Another test to compare the clean batch with the other batches without any assumption of normality is the Wilcoxon Rank Sum Test. To apply this test, the following assumptions are made:
 
 \begin{itemize}
   \item The samples have been collected randomly from their respective populations.
@@ -103,7 +101,6 @@ Another test to compare the clean batch with the other batches without any assum
 
 We can make the first two assumptions based on the assignment description. Although the measurements themselves have limited precision, the underlying value is continuous, which justifies the third assumption. For the last assumption, we refer to the similarity of the histograms of the different batches. 
 
-Contamination is caused by a leakage, so we expect tainted batches to generally have higher sample values. We perform a one-sided Wilcoxon Signed-Rank Test with the clean batch and each of the potentially tainted batches. 
 \subsection{Outliers}
 We will perform a Grubbs outlier test to check whether there are any indications that one of the measurements has some incorrect value due to for example measurement errors.
 \section{Results}
@@ -271,17 +268,17 @@ xtable(ks_frame, digits=c(0,0,4))
 
 None of the batches violate the null-hypothesis, since all p-values are larger than $0.01$. Note that the missing value in B7 is omitted in the test with B7 and replaced with the mean of all other values in B7 in the test with B7*. 
 
-\subsubsection{Wilcoxon Signed-Rank Test}
+\subsubsection{Wilcoxon Rank-Sum Test}
 
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
-wilcoxB1 = unlist(wilcox.test(batchB0$OUTCOME, batchB1$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB2 = unlist(wilcox.test(batchB0$OUTCOME, batchB2$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB3 = unlist(wilcox.test(batchB0$OUTCOME, batchB3$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB4 = unlist(wilcox.test(batchB0$OUTCOME, batchB4$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB5 = unlist(wilcox.test(batchB0$OUTCOME, batchB5$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB6 = unlist(wilcox.test(batchB0$OUTCOME, batchB6$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB7 = unlist(wilcox.test(batchB0$OUTCOME, batchB7full$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB7m = unlist(wilcox.test(batchB0$OUTCOME, batchB7mean$OUTCOME, paired=TRUE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
+wilcoxB1 = unlist(wilcox.test(batchB0$OUTCOME, batchB1$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
+wilcoxB2 = unlist(wilcox.test(batchB0$OUTCOME, batchB2$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
+wilcoxB3 = unlist(wilcox.test(batchB0$OUTCOME, batchB3$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
+wilcoxB4 = unlist(wilcox.test(batchB0$OUTCOME, batchB4$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
+wilcoxB5 = unlist(wilcox.test(batchB0$OUTCOME, batchB5$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
+wilcoxB6 = unlist(wilcox.test(batchB0$OUTCOME, batchB6$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
+wilcoxB7 = unlist(wilcox.test(batchB0$OUTCOME, batchB7full$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
+wilcoxB7m = unlist(wilcox.test(batchB0$OUTCOME, batchB7mean$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE)["p.value"])
 
 wilcox_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B7*"), 
                               "p-value"=c(wilcoxB1, wilcoxB2, wilcoxB3, wilcoxB4, wilcoxB5, wilcoxB6, wilcoxB7, wilcoxB7m))
@@ -290,7 +287,7 @@ library(xtable)
 xtable(wilcox_frame, digits=c(0,0,4))
 @
 
-None of the batches are potentially tainted if we perform a Wilcoxon Rank-Sum Test if we take $\alpha =0.01$. 
+The null hypothesis can be discarded for B3 only if we take $\alpha =0.01$. 
 
 \subsection{Outliers}
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
