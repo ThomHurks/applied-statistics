@@ -133,13 +133,16 @@ The normal QQ plot here too seems to suggest that the data is not normally distr
 \subsubsection{Shapiro-Wilk on log-transformed data}
 In the previous section we observed that the data does not seem to follow a normal distribution. In order to perform parametric tests that assume normality, we must then transform the data. We will transform the data using the well-known log transformation and then check for each batch what the p-value of the Shapiro-Wilk test is in order to confirm that the transformation had the desired effect.
 <<echo=FALSE, results="asis">>=
-library(xtable)
-sw_log_batchB0 = shapiro.test(log(batchB0$OUTCOME))$p.value
 sw_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"), 
-                          "p-value"=c(sw_log_batchB0, shapiro.test(log(batchB1$OUTCOME))$p.value,
-                                      shapiro.test(log(batchB2$OUTCOME))$p.value, shapiro.test(log(batchB3$OUTCOME))$p.value,
-                                      shapiro.test(log(batchB4$OUTCOME))$p.value, shapiro.test(log(batchB5$OUTCOME))$p.value,
-                                      shapiro.test(log(batchB6$OUTCOME))$p.value, shapiro.test(log(batchB7$OUTCOME))$p.value))
+                          "p-value"=c(shapiro.test(batchB0$LOGOUTCOME)$p.value,
+                                      shapiro.test(batchB1$LOGOUTCOME)$p.value,
+                                      shapiro.test(batchB2$LOGOUTCOME)$p.value,
+                                      shapiro.test(batchB3$LOGOUTCOME)$p.value,
+                                      shapiro.test(batchB4$LOGOUTCOME)$p.value,
+                                      shapiro.test(batchB5$LOGOUTCOME)$p.value,
+                                      shapiro.test(batchB6$LOGOUTCOME)$p.value,
+                                      shapiro.test(batchB7$LOGOUTCOME)$p.value))
+library(xtable)
 xtable(sw_log_frame, digits=c(0,0,4))
 @
 None of the batches reject normality, indicating that the Shapiro-Wilk test cannot be used to reject normality. 
