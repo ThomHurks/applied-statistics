@@ -53,7 +53,7 @@ In the first section we describe which methods we use to find the affected batch
 \newpage
 \section{Methods}
 To decide if any of the batches are affected, we perform both parametric and non-parametric tests. The parametric tests assume that the data is normally distributed, which means we must test for normality and if necessary transform the data. Non-parametric tests are generally less powerful than parametric tests, but can always be applied regardless of normality. With parametric tests one must be careful to draw conclusions about the original non-transformed data if the data needs to be transformed in order to meet the normality assumption. 
-\subsection{Exploritorary data analysis}
+\subsection{Exploratory data analysis}
 Before performing any parametric or non-parametric tests, we will first perform some standard statistical tests to gain some insight into the data. As a start, we will plot the data and calculate the mean, standard deviation, variance and median of each batch. After that, we will perform a Shapiro-Wilk test to see whether the non-transformed data is normal. We have formulated the null hypothesis as can be found in equation\ref{normal}:
 \begin{align}
 \label{normal}
@@ -115,6 +115,27 @@ H_1: \text{Batch}_0 \text{ and batch}_i \text{ come from a different population}
 \end{align}
 This null hypothesis indicates that the change that the median of $\text{batch}_0$ is larger than the median of $\text{batch}_1$ is the same as that the median of $\text{batch}_0$ is smaller than the median of $\text{batch}_1$. We will reject the null hypothesis if p-value $< 0.01$. 
 \section{Results}
+\subsection{Exploratory data analysis}
+<<echo=FALSE, results='asis'>>=
+means = list()
+variances = list()
+medians = list()
+standevs = list()
+for (batch in all_batches) {
+  cur_batch = dataset[dataset$BATCH == batch,]$OUTCOME
+  means[batch] = mean(cur_batch)
+  medians[batch] = median(cur_batch)
+  variances[batch] = var(cur_batch)
+  standevs[batch] = sd(cur_batch)
+}
+metrics_frame = data.frame("mean" = unlist(means),
+                           "median" = unlist(medians),
+                           "variance" = unlist(variances),
+                           "st-dev" = unlist(standevs))
+library(xtable)
+xtable(metrics_frame)
+@
+\FloatBarrier
 \subsection{QQ Plot and Shapiro-Wilk}
 The first step is to generate a normal QQ plot for batch 0 as an easy visual confirmation of normality.
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
@@ -168,6 +189,7 @@ sw_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"
 library(xtable)
 xtable(sw_log_frame, digits=c(0,0,4))
 @
+\FloatBarrier
 None of the batches reject normality, indicating that the Shapiro-Wilk test cannot be used to reject normality. 
 We can generate a normal QQ-plot to get more insight into the log transformed batch 0.
 <<figure3, fig.cap="QQ Plot of the log of batch 0", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
@@ -203,6 +225,7 @@ jarque_frame = data.frame("Jarque-Bera"= unlist(batches_jarque))
 library(xtable)
 xtable(jarque_frame, digits=c(0,4))
 @
+\FloatBarrier
 Kurtosis and skewness tests are also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is above $0.01$ for all batches, so we cannot reject the normality hypothesis based on skewness and kurtosis. Both the Shapiro-Wilk test and Jarque-Bera indicate that assuming normality on the batches is not rejected and therefore we will assume an underlying normal distribution for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
 \subsubsection{T-Test}
 As can be found in the table above containing the variance of the batches, we can see that the variances of the batches are not equal. We therefore have to perform a t-test that assumes unequal variances. Batch seven has one missing value, which should not be a problem for a t-test.\\
@@ -217,6 +240,7 @@ ttest_log_frame = data.frame("p-value"=unlist(ttests_batches))
 library(xtable)
 xtable(ttest_log_frame, digits=c(0,4))
 @
+\FloatBarrier
 The results indicate that batch three has a mean that is significanlty different from the mean of the unaffected batch, since its p-value is less than $0.01$. This could indicate that this batch is affected.
 \subsubsection{Homogeneity tests}
 Performing the Barlett's tests gives us a p-value of $\Sexpr{as.numeric(unlist(bartlett.test(dataset$OUTCOME~dataset$BATCH))["p.value"])} < 0.01$. This rejects the null hypothesis that all the batches have the same variance. After performing an F-test that compares all the batches with batch 0, we have found the following results:
@@ -229,6 +253,7 @@ var_log_frame = data.frame("F-test"=unlist(vartestvalues))
 library(xtable)
 xtable(var_log_frame,digits=c(0,3))
 @
+\FloatBarrier
 These results indicate that batch four has different properties than the other batches.
 \subsubsection{Outliers}
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
@@ -243,15 +268,15 @@ for(batch in batches) {
   grubbsMin$`p-value`[batch] = grubbs.test(logBi, type=10, opposite=TRUE)$p.value;
   grubbsMax$`p-value`[batch] = grubbs.test(logBi, type=10)$p.value;
 }
-@
-<<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(xtable);
 xtable(as.data.frame(grubbsMin));
 @
+\FloatBarrier
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(xtable);
 xtable(as.data.frame(grubbsMax));
 @
+\FloatBarrier
 Both the extreme on the left and the right tail are not significantly big to reject them as an outlier. This indicates that no values can be indicated as errors due mistakes that people maked while measuring the amount of $\mu$g in the batches.
 \subsection{Non-parametric tests}
 \subsubsection{Serial correlation tests with means}
@@ -308,6 +333,7 @@ wilcox_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B7*
 library(xtable)
 xtable(wilcox_frame, digits=c(0,0,4))
 @
+\FloatBarrier
 We can observe that the p-value for batch 3 $= \Sexpr{wilcoxB3} < 0.01$ and so for batch 3 we reject the null hypothesis. The other batches do not deviate significantly from batch zero.
 \section{Conclusion}
 If we consider the results, we see that batch three fails both the two-sided t-test and the Wilcoxon Rank-Sum Test. We have hypothesized that we expect some kind of location shift of the distribution towards a higher outcome. Both the Wilcoxon Rank-Sum Test and t-test are tests that investigate whether such a shift has taken place and by rejecting the null hypothesis they indicate that batch three indeed has shifted towards a higher amount of silicones in its batch. Because of this reason, we advice you to not sell batch three, since we highly expect that batch three is affected by the silicones.\\\\
