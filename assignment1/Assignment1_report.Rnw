@@ -4,12 +4,14 @@
 \usepackage{longtable,framed}
 \usepackage{amsmath,amssymb}
 
-<<echo=FALSE>>=
+<<echo=FALSE, message=FALSE, results='hide'>>=
 library(sas7bdat)
 dataset = read.sas7bdat("assignment1.sas7bdat")
-batchB7full = dataset[dataset$BATCH == "B7",]
-batchB7mean = batchB7full
-batchB7mean[7,3] = 4.49
+library(mice)
+imputed_dataset = complete(mice(dataset), 1)
+dataset = dataset[!is.nan(dataset$OUTCOME),]
+dataset$LOGOUTCOME = log(dataset$OUTCOME)
+imputed_dataset$LOGOUTCOME = log(imputed_dataset$OUTCOME)
 dataset = dataset[!is.nan(dataset$OUTCOME),]
 batchB0 = dataset[dataset$BATCH == "B0",]
 batchB1 = dataset[dataset$BATCH == "B1",]
@@ -19,8 +21,11 @@ batchB4 = dataset[dataset$BATCH == "B4",]
 batchB5 = dataset[dataset$BATCH == "B5",]
 batchB6 = dataset[dataset$BATCH == "B6",]
 batchB7 = dataset[dataset$BATCH == "B7",]
+batchB7_imputed = imputed_dataset[imputed_dataset$BATCH == "B7",]
 batchB1toB7 = dataset[dataset$BATCH != "B0",]
-dataset$LOGOUTCOME = log(dataset$OUTCOME)
+
+all_batches = unique(dataset$BATCH)
+batches = all_batches[all_batches != "B0"]
 @
 
 \begin{document}
@@ -75,13 +80,7 @@ If the result of the t-test is less than $0.01$, we will reject the null hypothe
 Besides performing a t-test, we will also perform some homogeneity tests to see whether the data also share the same characteristics. To check if this is the case, we will perform a Barlett's test, which checks whether all the variances of the batches are equal to each other. The null hypothesis of that test is that all variances are equal, and thus that the sets are homogeneous. We will also perform an F-test to see which batches have similar properties as batch 0.
 \subsubsection{Outliers}
 We will perform a Grubbs outlier test on the log-transformed to check whether there are any indications that one of the measurements has some incorrect value due to for example measurement errors. We will do this for both outliers on the left and right tail. Our null hypothesis is can be found in equation \ref{outlier}.
-\begin{align}
-\begin{cases}
-H_0: \text{The data contains no outliers in batch}_i & \quad \text{for} 1 \leg i \leg 7 \\
-H_0: \text{The data contains outliers in batch}_i & \quad \text{for} 1 \leg i \leg 7 
-\end{cases}
-\end{align}
-We will reject the null hypothesis if the p-value$<0.01$.
+We will reject the null hypothesis if the p-value $< 0.01$.
 \subsection{Non-parametric tests}
 \subsubsection{Serial correlation test on the means}
 We will perform a serial correlation test on the means of the batches. The serial correlation test is Von Neumann with lag-1 autocorrelation. The null hypothesis is that the means of the batches are random. If this indeed is the case, this is an indication that none of the batches is affected by the silicones. We will reject the null hypothesis if $p<0.05$.
@@ -153,47 +152,40 @@ qqline(log(batchB0$OUTCOME))
 \subsection{Skewness and Kurtosis}
 After performing the Shapiro-Wilk test, we have performed skewness and kurtosis tests, to get some insights in what way the transformed data follows normality. In most cases the skewness is a bit too high, while in other cases the kurtosis is not in the range of 
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
-library(moments)
-
-batches = unique(dataset$BATCH);
-skewness = list();
-kurtosis = list();
-
-for(batch in batches) {
+library(e1071)
+skewness_batches = list();
+kurtosis_batches = list();
+for (batch in all_batches) {
   Bi = dataset[dataset$BATCH == batch,]$LOGOUTCOME
-  skewness[batch] <-skewness(Bi, type=2);
-  kurtosis[batch] <-kurtosis(Bi, type=2);
+  skewness_batches[batch] <- e1071::skewness(Bi, type=2)
+  kurtosis_batches[batch] <- e1071::kurtosis(Bi, type=2)
 }
-kurtosis_skewness = data.frame(
-                              "kurtosis"= unlist(kurtosis), "skewness" = unlist(skewness))
+kurtosis_skewness = data.frame("kurtosis"= unlist(kurtosis_batches), "skewness" = unlist(skewness_batches))
 library(xtable)
 xtable(kurtosis_skewness, digits = c(0,3,3))
 @
 \FloatBarrier
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(moments)
-
-batches = unique(dataset$BATCH)
-jarqueje = list();
-
-for(batch in batches) {
+batches_jarque = list()
+for (batch in all_batches) {
   Bi = dataset[dataset$BATCH == batch,]$LOGOUTCOME
-  jarqueje[batch] <- as.numeric(unlist(jarque.test(Bi))["p.value"])
+  batches_jarque[batch] <- as.numeric(unlist(jarque.test(Bi))["p.value"])
 }
-jarque_bera = data.frame(
-                              "Jarque-Bera"= unlist(jarqueje))
+jarque_frame = data.frame("Jarque-Bera"= unlist(batches_jarque))
 library(xtable)
-xtable(jarque_bera, digits=c(0,4))
+xtable(jarque_frame, digits=c(0,4))
 @
-
   This kind of test is also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is above $0.01$ for all batches, so we cannot reject the normality hypothesis based on skewness and kurtosis. The data is skewed right, which is probably the reason that the Shapiro-Wilk test rejects the assumption of a normal distribution. The p-value of the Shapiro-Wilk test is not very low and the skewness, kurtosis and Jarque-Bera tests seem to suggest a close-to-normal shape. In combination with the fact that for all the other batches we cannot reject the normality null hypothesis, we will assume that batch 0 is normally distributed for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test is reasonable.
 \subsubsection{T-Test}
 To see which t-test variant we need to perform, we need to analyse the variance of all the log-transformed batches.
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
-var_log_B7 = var(log(batchB7$OUTCOME[!is.nan(batchB7$OUTCOME)]))
+var_log_B7 = var(batchB7$LOGOUTCOME)
 variance_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"), 
-                              "variance"=c(var(log(batchB0$OUTCOME)), var(log(batchB1$OUTCOME)), var(log(batchB2$OUTCOME)), var(log(batchB3$OUTCOME)),
-                                           var(log(batchB4$OUTCOME)), var(log(batchB5$OUTCOME)), var(log(batchB6$OUTCOME)), var_log_B7))
+                                "variance"=c(var(batchB0$LOGOUTCOME), var(batchB1$LOGOUTCOME),
+                                           var(batchB2$LOGOUTCOME), var(batchB3$LOGOUTCOME),
+                                           var(batchB4$LOGOUTCOME), var(batchB5$LOGOUTCOME),
+                                           var(batchB6$LOGOUTCOME), var_log_B7))
 library(xtable)
 xtable(variance_log_frame, digits=c(0,0,4))
 @
@@ -218,10 +210,9 @@ Performing the Barlett's tests gives us a p-value of $\Sexpr{as.numeric(unlist(b
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 vartestvalues = list()
 for (batch in batches) {
-  Bi = log(dataset[dataset$BATCH == batch,]$OUTCOME)
-  vartestvalues[batch] <- var.test(log(batchB0$OUTCOME),Bi)$p.value
+  Bi = dataset[dataset$BATCH == batch,]$LOGOUTCOME
+  vartestvalues[batch] <- var.test(batchB0$LOGOUTCOME, Bi)$p.value
 }
-vartestvalues <- vartestvalues[-vartestvalues$B0]
 var_log_frame = data.frame("F-test"=unlist(vartestvalues))
 library(xtable)
 xtable(var_log_frame,digits=c(0,3))
@@ -245,8 +236,8 @@ ksB3 = unlist(ks.test(batchB0$OUTCOME, batchB3$OUTCOME, exact=TRUE)["p.value"])
 ksB4 = unlist(ks.test(batchB0$OUTCOME, batchB4$OUTCOME, exact=TRUE)["p.value"])
 ksB5 = unlist(ks.test(batchB0$OUTCOME, batchB5$OUTCOME, exact=TRUE)["p.value"])
 ksB6 = unlist(ks.test(batchB0$OUTCOME, batchB6$OUTCOME, exact=TRUE)["p.value"])
-ksB7 = unlist(ks.test(batchB0$OUTCOME, batchB7full$OUTCOME, exact=TRUE)["p.value"])
-ksB7m = unlist(ks.test(batchB0$OUTCOME, batchB7mean$OUTCOME, exact=TRUE)["p.value"])
+ksB7 = unlist(ks.test(batchB0$OUTCOME, batchB7$OUTCOME, exact=TRUE)["p.value"])
+ksB7m = unlist(ks.test(batchB0$OUTCOME, batchB7_imputed$OUTCOME, exact=TRUE)["p.value"])
 
 ks_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B7*"), 
                               "p-value"=c(ksB1, ksB2, ksB3, ksB4, ksB5, ksB6, ksB7, ksB7m))
@@ -266,8 +257,8 @@ wilcoxB3 = unlist(wilcox.test(batchB0$OUTCOME, batchB3$OUTCOME, paired=FALSE, co
 wilcoxB4 = unlist(wilcox.test(batchB0$OUTCOME, batchB4$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
 wilcoxB5 = unlist(wilcox.test(batchB0$OUTCOME, batchB5$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
 wilcoxB6 = unlist(wilcox.test(batchB0$OUTCOME, batchB6$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB7 = unlist(wilcox.test(batchB0$OUTCOME, batchB7full$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
-wilcoxB7m = unlist(wilcox.test(batchB0$OUTCOME, batchB7mean$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
+wilcoxB7 = unlist(wilcox.test(batchB0$OUTCOME, batchB7$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
+wilcoxB7m = unlist(wilcox.test(batchB0$OUTCOME, batchB7_imputed$OUTCOME, paired=FALSE, correct=FALSE, exact=TRUE, alternative="less")["p.value"])
 
 wilcox_frame = data.frame(batch=c("B1", "B2", "B3", "B4", "B5", "B6", "B7", "B7*"), 
                               "p-value"=c(wilcoxB1, wilcoxB2, wilcoxB3, wilcoxB4, wilcoxB5, wilcoxB6, wilcoxB7, wilcoxB7m))
@@ -280,7 +271,7 @@ Since we reject batches if the p-value $< 0.01$, only batch 3 fails to pass the 
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(outliers)
 
-batches = unique(dataset$BATCH);
+
 
 grubbsMin = list(`min`=c(),`p-value`=c());
 grubbsMax = list(`max`=c(),`p-value`=c());
