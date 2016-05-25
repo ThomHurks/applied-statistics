@@ -105,6 +105,13 @@ We will reject the null hypothesis when $p < 0.01$. Because batch 7 has a missin
 \subsubsection{Wilcoxon Rank-Sum Test}
 A second non-parametric test we will perform is the Wilcoxon Rank-Sum Test, which needs the assumption that both distributions are from an ordinal distribution. This implies that the data cannot contain any ties. Since we have some ties in the data, we will not get the exact p-value. Since our value does not contain a substantial amount of ties, the bias of the p-value will not be extremely high. Because the critical value is already somewhat higher than the suggested Bonferroni value, the hypothesis test will not pass while it should have failed.
 The hypotheses of the Wilcoxon Rank-Sum test can be found in equation \ref{wilcox}:
+\begin{align}
+\label{wilcox}
+\begin{cases}
+H_0: \text{Batch}_0 \text{ and batch}_i \text{ come from the same population} & \quad \text{for } 1 \leq i \leq 7 \\
+H_i: \text{Batch}_0 \text{ and batch}_i \text{ come from a different population} & \quad \text{for } 1 \leq i \leq 7 \\
+\end{cases}
+\end{align}
 This null hypothesis indicates that the change that the median of $\text{batch}_0$ is larger than the median of $\text{batch}_1$ is the same as that the median of $\text{batch}_0$ is smaller than the median of $\text{batch}_1$. We will reject the null hypothesis if p-value $< 0.01$. 
 \section{Results}
 \subsection{QQ Plot and Shapiro-Wilk}
