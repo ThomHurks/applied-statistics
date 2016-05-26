@@ -69,8 +69,8 @@ Most of our hypotheses include testing all seven possibly affected batches. Beca
 Some tests, however, test data from all batches in one go and for these tests the Bonferroni correction is not necessary. For those tests we will use the original critical value of $\alpha=0.05$.
 \subsection{Parametric tests}
 \subsubsection{Investigating normality on transformed data}
-Some statistical tests assume normality of the data, or require the data to at least approach normality. For that reason we will investige if the data is normally distributed by inspecting normal QQ-plots and by using two tests on noramlity: the Shapiro-Wilk test and Anderson-Darling. If necessary we will transform the data in such a way that the transformed data is normally distributed or nearly normal. For non-parametric tests that do not assume any specific distribution we will use the original non-transformed data. The null hypothesis of both Shapiro-Wilk and Anderson-Darling can be found in equation \ref{normal}. We will reject the null hypothesis if the p-value $<0.01$.
-Besides the Anderson-Darling and Shapiro-Wilk test, we will perform skwewness and kurtosis tests to determine where normality can be rejected. The critical value of a two-sided skewness test is 1.157, while the critical value of the kurtosis is 1.49. We will perform a Jarque-Bera test to see if it is appropriate to reject a normal distribution based on skewness and kurtosis. The null hypothesis is the same as with the Shapiro-Wilk and Anderson-Darling test which can be found in equation \ref{normal}. We will reject normality if the p-value $< 0.01$.
+Some statistical tests assume normality of the data, or require the data to at least approach normality. For that reason we will investigate if the data is normally distributed by inspecting normal QQ-plots and by using two tests on normality: the Shapiro-Wilk test and the Anderson-Darling test. If necessary we will transform the data in such a way that the transformed data is normally distributed or nearly normal. For non-parametric tests that do not assume any specific distribution we will use the original non-transformed data. The null hypothesis of both Shapiro-Wilk and Anderson-Darling can be found in equation \ref{normal}. We will reject the null hypothesis if the p-value $<0.01$.
+Besides the Anderson-Darling and Shapiro-Wilk tests, we will perform skwewness and kurtosis tests to determine whether the normality hypothesis can be rejected. The critical value of a two-sided skewness test is 1.157, while the critical value of the kurtosis is 1.49. We will perform a Jarque-Bera test to see if it is appropriate to reject a normal distribution based on skewness and kurtosis. The null hypothesis is the same as with the Shapiro-Wilk and Anderson-Darling test which can be found in equation \ref{normal}. We will reject normality if the p-value $< 0.01$.
 \subsubsection{T-test}
 Because batch 0 is produced before the previous inspection where no leakage was discovered, we know that the distribution of the amount of silicones found in each batch should be similar to the amount of silicone in batch 0. To check whether they are similar, we will perform a one-sided t-test. We have chosen a one-sided test, since a leakage in silicones will cause the amount to be higher in the batches and thus we have to test only if the test is violated on one side. To perform a proper t-test, we have to know if the variances of the batches are equal. We check this by applying Barlett's test, which checks whether all the variances of the batches are equal to each other. This can be formulated as can be found in \ref{barlet}:
 \begin{align}
@@ -153,7 +153,7 @@ library(xtable)
 xtable(metrics_frame)
 @
 \FloatBarrier
-We also discovered that batch seven has a missing value ("NA"). Some of the statistical tests that we plan to perform do not require that the number of data points between batches is the same, and since there is only a single missing value in the whole dataset, we can simply remove the missing value in those cases. In other cases the missing value will be replaced by the mean of the other sample values in batch 7. 
+We also discovered that batch seven has a missing value ("NA"). Some of the statistical tests that we plan to perform do not require that the number of data points between batches is the same, and since there is only a single missing value in the whole dataset, we can simply remove the missing value in those cases. 
 The next step is to generate a normal QQ plot for batch 0 as an easy visual confirmation of normality.
 <<figure1, fig.cap="QQ Plot of batch 0", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
 qqnorm(batchB0$OUTCOME)
@@ -180,7 +180,7 @@ xtable(shapiro_frame, digits=c(0,4))
 @
 \FloatBarrier
 We can reject the normality null hypothesis for batches zero, five and six with p-values respectively $\Sexpr{shapiro_frame["B0",]}$, $\Sexpr{shapiro_frame["B5",]}$ and $\Sexpr{shapiro_frame["B6",]}$. We can also observe that for the other batches the p-values are not particularly high, the exception being batch 3 with a p-value of $\Sexpr{shapiro_frame["B3",]}$.\\\\
-If we perform the Anderson-Darling test, we see that only batch three, four and seven follow a normal distribution. On all the other batches, normality is rejected with a very low p-value. 
+Since our data contains some ties and that is a weakness of the Shapiro-Wilk test, we also perform the Anderson-Darling normality test.
 <<echo=FALSE, results='asis'>>=
 library(nortest)
 anderson_values = list()
@@ -192,45 +192,43 @@ library(xtable)
 xtable(anderson_frame, digits=c(0,4))
 @
 \FloatBarrier
+With Anderson-Darling we see that we can reject the normality hypothesis for batches zero, one, five and six. The hypothesis for batch two is not rejected, but it must be noted it has a low p-value of $\Sexpr{anderson_frame["B2",]}$
 \subsection{Parametric tests}
 \subsubsection{Shapiro-Wilk on log-transformed data}
-In the previous section we observed that for most batches, including the batch 0 which we want to compare with the other batches. In order to perform parametric tests that assume normality, we can transform the data such that all batches are normally distributed or close to a normal distribution. We will transform the data using the well-known log transformation and then check for each batch what the p-value of the Shapiro-Wilk test is in order to confirm that the transformation had the desired effect.
+In the previous section we observed that we could reject normality for batches zero, five and six on both normality tests and also for batch one using Anderson-Darling. This includes batch zero, which is important because we intend to compare it with other batches. In order to perform parametric tests that assume normality, we can transform the data such that all batches are normally distributed or close to a normal distribution. We transform the data using the well-known log transformation and then check for each batch what the p-values of the Shapiro-Wilk and Anderson-Darling tests are in order to confirm that the transformation has the desired effect.
 <<echo=FALSE, results="asis">>=
-sw_log_frame = data.frame(batch=c("B0", "B1", "B2", "B3", "B4", "B5", "B6", "B7"), 
-                          "p-value"=c(shapiro.test(batchB0$LOGOUTCOME)$p.value,
-                                      shapiro.test(batchB1$LOGOUTCOME)$p.value,
-                                      shapiro.test(batchB2$LOGOUTCOME)$p.value,
-                                      shapiro.test(batchB3$LOGOUTCOME)$p.value,
-                                      shapiro.test(batchB4$LOGOUTCOME)$p.value,
-                                      shapiro.test(batchB5$LOGOUTCOME)$p.value,
-                                      shapiro.test(batchB6$LOGOUTCOME)$p.value,
-                                      shapiro.test(batchB7$LOGOUTCOME)$p.value))
+shapiro_values = list()
+for (batch in all_batches) {
+  shapiro_values[batch] = shapiro.test(dataset[dataset$BATCH == batch,]$LOGOUTCOME)$p.value
+}
+sw_log_frame = data.frame("p-value"=unlist(shapiro_values))
 library(xtable)
-xtable(sw_log_frame, digits=c(0,0,4))
+xtable(sw_log_frame, digits=c(0,4))
 @
 \FloatBarrier
-None of the batches reject normality, indicating that the Shapiro-Wilk test cannot be used to reject normality for the transformed batches.
+We cannot reject the normality hypothesis for any of the transformed batches. It must be noted the p-value for batch zero is still somewhat low with $\Sexpr{sw_log_frame["B0",]}$
 \subsubsection{Anderson-Darling on log-transformed data}
-We have also performed the Anderson-Darling test to investigate if the transformation causes the data to be more normally shaped.
+We also perform the Anderson-Darling test to investigate if the transformation causes the data to be more normally shaped.
 <<echo=FALSE, results='asis'>>=
 library(nortest)
-anderson_trans_values = list()
+anderson_values = list()
 for (batch in all_batches) {
   anderson_values[batch] = ad.test(dataset[dataset$BATCH == batch,]$LOGOUTCOME)$p.value
 }
-anderson_trans_frame = data.frame("p-value"=unlist(anderson_trans_values))
+anderson_frame = data.frame("p-value"=unlist(anderson_values))
 library(xtable)
-xtable(anderson_trans_frame, digits=c(0,4))
+xtable(anderson_frame, digits=c(0,4))
 @
-Again, none of the batches reject normality.
+Again, we cannot reject the normality hypothesis for any batch, but the p-value for batch zero is again somewhat low with $\Sexpr{anderson_frame["B0",]}$.
 We can generate a normal QQ-plot to get more insight into the log transformed batch 0.
 <<figure3, fig.cap="QQ Plot of the log of batch 0", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
 qqnorm(log(batchB0$OUTCOME))
 qqline(log(batchB0$OUTCOME))
 @
 \FloatBarrier
+We can visually observe that the normal QQ-plot matches the results of the normality tests; the data seems to be near normality, but deviates enough to justify more testing.
 \subsection{Skewness and Kurtosis}
-After performing the Shapiro-Wilk and Anderson-Darling tests, we perform skewness and kurtosis tests to get some insight in the way the log-transformed data follows normality. In most batches the skewness seems a bit too far away from zero, while in some batches the kurtosis is away from three.
+After performing the Shapiro-Wilk and Anderson-Darling tests, we perform skewness and kurtosis tests to gain more insight in the way the log-transformed data follows normality. In most batches the skewness seems a bit too far away from zero, while in some batches the kurtosis is away from three.
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(e1071)
 skewness_batches = list();
@@ -245,7 +243,7 @@ library(xtable)
 xtable(kurtosis_skewness, digits = c(0,3,3))
 @
 \FloatBarrier
-Kurtosis and skewness tests are also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three. The p-value of the Jarque-Bera test is above $0.01$ for all batches, so we cannot reject the normality hypothesis based on skewness and kurtosis. Not only do the Shapiro-Wilk and Anderson-Darling test indicate that assuming normality on the log-transformed data is not rejected, but also Jarque-Bera indicates this is valid. Therefore the normality assumption for the transformed data is reasonable for the following tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test seems to be very reasonable.
+Kurtosis and skewness tests are also formalized in the Jarque-Bera test, which tests if the skewness is close to zero and the kurtosis close to three.
 <<echo=FALSE, warning=FALSE, message=FALSE, results="asis">>=
 library(moments)
 batches_jarque = list()
@@ -258,6 +256,7 @@ library(xtable)
 xtable(jarque_frame, digits=c(0,4))
 @
 \FloatBarrier
+The p-value of the Jarque-Bera test is above $0.01$ with a big margin for all batches, so we cannot reject the normality hypothesis based on skewness and kurtosis. Not only do the Shapiro-Wilk and Anderson-Darling tests indicate that assuming normality on the log-transformed data is not rejected, but also Jarque-Bera indicates that the batches having a normal shape cannot be rejected. Therefore the normality assumption for the transformed data is reasonable for the upcoming parametric tests. It must also be noted that the t-test is robust against data that deviates somewhat from normality, so our assumption at least for that test seems to be very reasonable.
 \subsubsection{T-Test}
 Performing the Barlett's tests gives us a p-value of $\Sexpr{as.numeric(unlist(bartlett.test(log(dataset$OUTCOME)~dataset$BATCH))["p.value"])} < 0.05$. This rejects the null hypothesis that all the batches have equal variance. This implies that we have to perform a t-test that assumes unequal variances. Batch seven has one missing value, which should not be a problem for a t-test.\\
 The results of the t-tests can be found in the following table:
