@@ -218,7 +218,7 @@ anderson_trans_values = list()
 for (batch in all_batches) {
   anderson_values[batch] = ad.test(dataset[dataset$BATCH == batch,]$LOGOUTCOME)$p.value
 }
-anderson_trans_frame = data.frame("p-value"=unlist(anderson_values))
+anderson_trans_frame = data.frame("p-value"=unlist(anderson_trans_values))
 library(xtable)
 xtable(anderson_trans_frame, digits=c(0,4))
 @
