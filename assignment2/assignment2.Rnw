@@ -14,7 +14,6 @@ decisionK = exercise9$K < 120
 exercise9CK_decision = data.frame(decisionC, decisionK)
 decisionC = factor(decisionC)
 decisionK = factor(decisionK)
-
 @
 
 \begin{document}
@@ -30,7 +29,7 @@ Thom Hurks & \textit{0828691}
 \end{minipage}
 }
 
-\date{June 17, 2016}
+\date{\today}
 
 \maketitle
 \newpage
@@ -105,6 +104,8 @@ We also perform the Dixon test, which can find up to two outliers in the data, o
 Hampel's rule is considered a non-parametric outlier test.
 \subsubsection{Tukey's method}
 Tukey's method is a non-parametric outlier test that is often implemented in the box plot. As such, we will give a box plot based on work by Tukey and accordingly present the outliers.
+\subsubsection{Doornbos test}
+The Doornbos test uses the externally studentized values to investigate the existence of a single outlier. This test is similar to outlier detection in linear models.
 \subsection{Results}
 Some of the described outlier tests assume normality. We will see in the section for Exercise 4 about normality tests that this is a valid assumption for this data set, especially for the log transformed data.
 \subsubsection{Grubbs test}
@@ -155,6 +156,45 @@ In figure \ref{fig:boxplot} you can see the box-and-whisker plot for the dataset
 boxplot(dataset_normality)
 @
 \FloatBarrier
+\subsubsection{Doornbos test}
+<<echo=FALSE>>=
+doornbos <- function(dataset, leave_out, alpha) {
+  dataset = sort(dataset)
+  n = length(dataset)
+  dataset_mean = mean(dataset)
+  dataset_var = var(dataset)
+  dataset_differences = dataset - dataset_mean
+  sk = sqrt(((n-1)/(n-2))*dataset_var - (n / ((n-1)*(n-2))) * (dataset_differences ^ 2))
+  externally_studentized_values = dataset_differences / (sk * sqrt((n-1)/n))
+  doornbos_values = abs(externally_studentized_values)
+  
+  if (leave_out > 0 && leave_out < n) {
+    doornbos_statistic = sort(doornbos_values, partial=n-leave_out)[n-leave_out]
+  } else {
+    doornbos_statistic = max(doornbos_values)
+  }
+  outlier = dataset[which(doornbos_values == doornbos_statistic)]
+  
+  p = 1 - (alpha/(2*n))
+  dof = n-2
+  doornbos_criterion = qt(p, df=dof)
+  pvalue = pt(doornbos_statistic, df=dof, lower.tail=FALSE)
+  pvalue_corrected = pvalue * 2 * n
+  if (pvalue_corrected > 1) {
+    pvalue_corrected = 1
+  }
+  doornbos_result = data.frame("Two-sided test"="Yes",
+                               "Outlier"=outlier,
+                               "Test statistic"=doornbos_statistic,
+                               "Test criterion"=doornbos_criterion,
+                               "p-value"=pvalue,
+                               "Bonferroni p-value"=pvalue_corrected)
+  return(doornbos_result)
+}
+doornbos_result = doornbos(dataset_normality, 0, 0.05)
+@
+At a critical level of $\alpha = 0.05$ we compute the Doornbos test criterion to be $\Sexpr{doornbos_result$Test.criterion}$.
+The result of the Doornbos test is that the hypothesis that the data has no outliers can be rejected, since the Doornbos test statistic for the value $\Sexpr{doornbos_result$Outlier}$ is $\Sexpr{doornbos_result$Test.statistic} > \Sexpr{doornbos_result$Test.criterion}$. None of the other values in the dataset produce a Doornbos test statistic that is larger than the computed Doornbos criterion.
 \subsection{Results for the log-transformed data}
 We will now present the results again, but for the log-transformed data.
 \subsubsection{Grubbs test}
@@ -202,9 +242,15 @@ In figure \ref{fig:boxplotlog} you can see the box-and-whisker plot for the data
 boxplot(dataset_normality_log)
 @
 \FloatBarrier
+\subsubsection{Doornbos Test}
+<<echo=FALSE>>=
+doornbos_result_log = doornbos(dataset_normality_log, 0, 0.05)
+@
+At a critical level of $\alpha = 0.05$ we compute the Doornbos test criterion to be $\Sexpr{doornbos_result_log$Test.criterion}$.
+The result of the Doornbos test is that the hypothesis that the data has no outliers can not be rejected, since the Doornbos test statistic is $< \Sexpr{doornbos_result_log$Test.criterion}$ for all values. The only value that comes close is $\Sexpr{doornbos_result_log$Outlier}$ with a test statistic of $\Sexpr{doornbos_result_log$Test.statistic}$.
 \subsection{Analysis}
 First, let us note that the Grubbs and Dixon's test assume normality of the data, which we will see in Exercise 4 is a valid assumption, especially for the log-transformed data.
-Based on our results we can be fairly confident that $132.4$ is an outlier, since this is reported by the Grubbs test, the Dixon test and Tukey's method and both for the one-sided and two-sided tests. The grubbs test seems to suggest that $119.3$ can possibly also be an outlier, but this is less certain since the p-value for that hypothesis is greater than $\alpha = 0.05$ for the two-sided test, but only slightly, and this possible outlier is not reported by the other tests.\\
+Based on our results we can be fairly confident that $132.4$ is an outlier, since this is reported by the Grubbs test, the Dixon test, Tukey's method and the Doornbos test and both for the one-sided and two-sided tests. The grubbs test seems to suggest that $119.3$ can possibly also be an outlier, but this is less certain since the p-value for that hypothesis is greater than $\alpha = 0.05$ for the two-sided test, but only slightly, and this possible outlier is not reported by the other tests.\\
 \\
 The analysis on the log-transformed data yields the same outlier, the logarithm of $132.4$, but only for the one-sided Grubbs test and the one-sided Dixon test and not according to Tukey's method. It must be noted that for that single outlier the two-sided tests are near significance.\\
 \\
