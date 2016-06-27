@@ -186,6 +186,12 @@ doornbos <- function(dataset, leave_out=0, alpha=0.05) {
   if (is.na(n) || n <= 2) {
     stop("Invalid sample size")
   }
+  if (leave_out < 0 || leave_out >= n) {
+    stop("Invalid number of extreme values to leave out")
+  }
+  if (alpha < 0 || alpha > 1) {
+    stop("Invalid value for the critical level alpha")
+  }
   same = dataset[n] - dataset[1]
   if (same == 0) {
     stop("All values are identical")
@@ -197,7 +203,7 @@ doornbos <- function(dataset, leave_out=0, alpha=0.05) {
   externally_studentized_values = dataset_differences / (sk * sqrt((n-1)/n))
   doornbos_values = abs(externally_studentized_values)
   
-  if (leave_out > 0 && leave_out < n) {
+  if (leave_out > 0) {
     doornbos_statistic = sort(doornbos_values, partial=n-leave_out)[n-leave_out]
   } else {
     doornbos_statistic = max(doornbos_values)
