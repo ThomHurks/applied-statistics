@@ -101,7 +101,7 @@ The grubbs test is also known as the extreme studentized deviate test or the max
 \subsubsection{Dixon test}
 We also perform the Dixon test, which can find up to two outliers in the data, one in the lower tail and one in the upper tail. Dixon's test also assumes that the data comes from a normal distribution. The Dixon test has various variants based on the sample size, and we will use the one appropriate for a sample size of $n = \Sexpr{length(dataset_normality)}$. We will also perform it as a one-sided and two-sided test.
 \subsubsection{Hampel's rule}
-Hampel's rule is considered a non-parametric outlier test.
+Hampel's rule is considered a non-parametric outlier test and is robust to one or a few outliers.
 \subsubsection{Tukey's method}
 Tukey's method is a non-parametric outlier test that is often implemented in the box plot. As such, we will give a box plot based on work by Tukey and accordingly present the outliers.
 \subsubsection{Doornbos test}
@@ -153,11 +153,11 @@ hampel <- function(dataset) {
   }
   mhat = median(dataset)
   abs_dev = abs(dataset - mhat)
-  mhat_mad = mad(abs_dev)
+  mhat_mad = median(abs_dev)
   abs_norm_val = abs_dev / mhat_mad
   critical_values = abs_norm_val > 3.5
   critical_anvs = unique(abs_norm_val[critical_values])
-  outliers = dataset[critical_values]
+  outliers = unique(dataset[critical_values])
   result = list("Name"="Hampel's Rule",
                 "Absolute Normalized Values"=critical_anvs,
                 "Outliers"=outliers)
@@ -165,7 +165,7 @@ hampel <- function(dataset) {
 }
 dataset_hampel = hampel(dataset_normality)
 @
-If we compute the absolute normalized value according to Hampel's rule for each observation, then we see that observations $\Sexpr{dataset_hampel$Outliers}$ have absolute normalized values $\Sexpr{dataset_hampel$`Absolute Normalized Values`}$ respectively, all greater than $3.5$, and as such can be considered outliers according to Hampel's rule.
+If we compute the absolute normalized value according to Hampel's rule for each observation, then we see that observation $\Sexpr{dataset_hampel$Outliers}$ has absolute normalized value $\Sexpr{dataset_hampel$`Absolute Normalized Values`}$, which is greater than $3.5$, and as such can be considered an outlier according to Hampel's rule.
 \subsubsection{Tukey's method}
 <<echo=FALSE>>=
 boxplot_outlier = boxplot(dataset_normality, plot=FALSE)$out
@@ -266,7 +266,7 @@ The result of the Dixon test is that $4.88582764350291$ may be an outlier, but o
 <<echo=FALSE>>=
 dataset_hampel_log = hampel(dataset_normality_log)
 @
-If we compute the absolute normalized value according to Hampel's rule for each observation, then we see that observations $\Sexpr{dataset_hampel_log$Outliers}$ have absolute normalized values $\Sexpr{dataset_hampel_log$`Absolute Normalized Values`}$ respectively, all greater than $3.5$, and as such can be considered outliers according to Hampel's rule.
+If we compute the absolute normalized value according to Hampel's rule for each observation, then we see that no observations have absolute normalized values greater than $3.5$, and as such none of the log-transformed values can be considered outliers according to Hampel's rule.
 \subsubsection{Tukey's method}
 In figure \ref{fig:boxplotlog} you can see the box-and-whisker plot for the dataset. This boxplot is based on the work of Tukey. The log-transformed dataset has no outliers according to Tukey's method.
 <<boxplotlog, fig.cap="Box-and-whisker plot of the log-transformed observations", fig.show="asis", fig.pos = "h!", echo=FALSE>>=
@@ -285,7 +285,7 @@ Based on our results we can be fairly confident that $132.4$ is an outlier, sinc
 \\
 The analysis on the log-transformed data yields the same outlier, the logarithm of $132.4$, but only for the one-sided Grubbs test and the one-sided Dixon test and not according to Tukey's method. It must be noted that for that single outlier the two-sided tests are near significance.\\
 \\
-Hampel's rule yields the most possible outliers and suggests $\Sexpr{dataset_hampel$Outliers}$ and their logs may all be outliers.
+Hampel's rule also suggests $\Sexpr{dataset_hampel$Outliers}$ is an outlier, but does not show possible outliers in the log-transformed data.
 \section{Exercise 4: Normality Tests}
 We are given a dataset of which we are to determine if the data has a normal distribution. We will also determine the normality of the logarithmically transformed data.\\
 In this section we will describe the various approaches at testing normality that we use. After presenting the approaches, we will give the results of the tests and provide an analysis of the results.
